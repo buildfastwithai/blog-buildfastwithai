@@ -1,0 +1,28 @@
+{
+  "name": "Build Fast with AI - Master Generative AI",
+  "short_name": "BFWAI",
+  "description": "Master Generative AI with hands-on courses, workshops, and vibrant community",
+  "icons": [
+    {
+      "src": "/favicon_package/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon_package/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "orientation": "portrait-primary",
+  "categories": ["education", "technology", "productivity"],
+  "lang": "en-US",
+  "dir": "ltr"
+}

@@ -1,0 +1,165 @@
+:root {
+  /* Agentic: deep indigo + cyan */
+  --cta-agentic-bg: #f8fafc;
+  --cta-agentic-bg-2: #f1f5f9;
+  --cta-agentic-border: #e2e8f0;
+  --cta-agentic-ink: #0f172a;
+  --cta-agentic-muted: #475569;
+  --cta-agentic-accent: #0284c7;
+  --cta-agentic-accent-2: #0ea5e9;
+
+  /* Claude: cream + terracotta */
+  --cta-claude-bg: #fffbf7;
+  --cta-claude-bg-2: #faf5f0;
+  --cta-claude-border: #f0e6db;
+  --cta-claude-ink: #292524;
+  --cta-claude-muted: #57534e;
+  --cta-claude-accent: #c2410c;
+  --cta-claude-accent-strong: #9a3412;
+
+  /* Corporate: slate + gold */
+  --cta-corp-bg: #f8fafc;
+  --cta-corp-bg-2: #f1f5f9;
+  --cta-corp-border: #e2e8f0;
+  --cta-corp-ink: #0f172a;
+  --cta-corp-muted: #475569;
+  --cta-corp-accent: #ca8a04;
+  --cta-corp-accent-strong: #a16207;
+
+  /* Workshop: amber */
+  --cta-workshop-bg: #fffbeb;
+  --cta-workshop-bg-2: #fef3c7;
+  --cta-workshop-border: #fde68a;
+  --cta-workshop-ink: #451a03;
+  --cta-workshop-muted: #78350f;
+  --cta-workshop-accent: #d97706;
+  --cta-workshop-accent-strong: #b45309;
+
+  /* Readiness: teal */
+  --cta-ready-bg: #f0fdfa;
+  --cta-ready-bg-2: #ccfbf1;
+  --cta-ready-border: #99f6e4;
+  --cta-ready-ink: #134e4a;
+  --cta-ready-muted: #115e59;
+  --cta-ready-accent: #0d9488;
+  --cta-ready-accent-strong: #0f766e;
+
+  /* Prompt: violet */
+  --cta-prompt-bg: #f5f3ff;
+  --cta-prompt-bg-2: #ede9fe;
+  --cta-prompt-border: #ddd6fe;
+  --cta-prompt-ink: #2e1065;
+  --cta-prompt-muted: #4c1d95;
+  --cta-prompt-accent: #7c3aed;
+  --cta-prompt-accent-strong: #6d28d9;
+
+  /* Tools: paper + red */
+  --cta-tools-bg: #ffffff;
+  --cta-tools-bg-2: #f8fafc;
+  --cta-tools-border: #e2e8f0;
+  --cta-tools-ink: #0f172a;
+  --cta-tools-muted: #475569;
+  --cta-tools-accent: #dc2626;
+  --cta-tools-accent-strong: #b91c1c;
+
+  /* Unrot: near-black + lime */
+  --cta-unrot-bg: #ffffff;
+  --cta-unrot-bg-2: #f8fafc;
+  --cta-unrot-border: #e2e8f0;
+  --cta-unrot-ink: #0f172a;
+  --cta-unrot-muted: #475569;
+  --cta-unrot-accent: #84cc16;
+  --cta-unrot-accent-strong: #65a30d;
+
+  /* Vibe: magenta / cyan */
+  --cta-vibe-bg: #fdf4ff;
+  --cta-vibe-bg-2: #fae8ff;
+  --cta-vibe-border: #f5d0fe;
+  --cta-vibe-ink: #4a044e;
+  --cta-vibe-muted: #701a75;
+  --cta-vibe-accent: #d946ef;
+  --cta-vibe-accent-2: #06b6d4;
+}
+
+.dark {
+  /* Agentic: deep indigo + cyan */
+  --cta-agentic-bg: #0f172a;
+  --cta-agentic-bg-2: #020617;
+  --cta-agentic-border: #1e293b;
+  --cta-agentic-ink: #f8fafc;
+  --cta-agentic-muted: #94a3b8;
+  --cta-agentic-accent: #38bdf8;
+  --cta-agentic-accent-2: #0ea5e9;
+
+  /* Claude: cream + terracotta */
+  --cta-claude-bg: #1c1917;
+  --cta-claude-bg-2: #0c0a09;
+  --cta-claude-border: #292524;
+  --cta-claude-ink: #fafaf9;
+  --cta-claude-muted: #a8a29e;
+  --cta-claude-accent: #ea580c;
+  --cta-claude-accent-strong: #f97316;
+
+  /* Corporate: slate + gold */
+  --cta-corp-bg: #0f172a;
+  --cta-corp-bg-2: #020617;
+  --cta-corp-border: #1e293b;
+  --cta-corp-ink: #f8fafc;
+  --cta-corp-muted: #94a3b8;
+  --cta-corp-accent: #eab308;
+  --cta-corp-accent-strong: #facc15;
+
+  /* Workshop: amber */
+  --cta-workshop-bg: #451a03;
+  --cta-workshop-bg-2: #270f01;
+  --cta-workshop-border: #78350f;
+  --cta-workshop-ink: #fef3c7;
+  --cta-workshop-muted: #fde68a;
+  --cta-workshop-accent: #f59e0b;
+  --cta-workshop-accent-strong: #fbbf24;
+
+  /* Readiness: teal */
+  --cta-ready-bg: #134e4a;
+  --cta-ready-bg-2: #042f2e;
+  --cta-ready-border: #115e59;
+  --cta-ready-ink: #ccfbf1;
+  --cta-ready-muted: #99f6e4;
+  --cta-ready-accent: #14b8a6;
+  --cta-ready-accent-strong: #2dd4bf;
+
+  /* Prompt: violet */
+  --cta-prompt-bg: #2e1065;
+  --cta-prompt-bg-2: #1e0747;
+  --cta-prompt-border: #4c1d95;
+  --cta-prompt-ink: #ede9fe;
+  --cta-prompt-muted: #c4b5fd;
+  --cta-prompt-accent: #8b5cf6;
+  --cta-prompt-accent-strong: #a78bfa;
+
+  /* Tools: paper + red */
+  --cta-tools-bg: #0f172a;
+  --cta-tools-bg-2: #020617;
+  --cta-tools-border: #1e293b;
+  --cta-tools-ink: #f8fafc;
+  --cta-tools-muted: #94a3b8;
+  --cta-tools-accent: #ef4444;
+  --cta-tools-accent-strong: #f87171;
+
+  /* Unrot: near-black + lime */
+  --cta-unrot-bg: #0f172a;
+  --cta-unrot-bg-2: #020617;
+  --cta-unrot-border: #1e293b;
+  --cta-unrot-ink: #f8fafc;
+  --cta-unrot-muted: #94a3b8;
+  --cta-unrot-accent: #a3e635;
+  --cta-unrot-accent-strong: #bef264;
+
+  /* Vibe: magenta / cyan */
+  --cta-vibe-bg: #4a044e;
+  --cta-vibe-bg-2: #2e0231;
+  --cta-vibe-border: #701a75;
+  --cta-vibe-ink: #fae8ff;
+  --cta-vibe-muted: #f0abfc;
+  --cta-vibe-accent: #e879f9;
+  --cta-vibe-accent-2: #22d3ee;
+}
