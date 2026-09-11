@@ -6,9 +6,13 @@ import MetaPixel from "@/components/meta-pixel";
 import PostHogPageView from "@/components/analytics/posthog-pageview";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+import { LoginForm } from "@/components/client-only-providers";
 import { cn } from "@/lib/utils";
 import { BLOG_SITE_URL } from "@/lib/urls";
+import AuthProvider from "@/providers/auth-provider";
 import CSPostHogProvider from "@/providers/posthog";
+import QueryProvider from "@/providers/query-provider";
 import { BlogThemeProvider } from "@/providers/theme-provider";
 import { generateOrganizationSchema } from "@/utils/seo/json-ld";
 import { generateBlogListingMetadata } from "@/utils/seo/metadata";
@@ -125,21 +129,29 @@ export default function RootLayout({
               <script>, and if it lands as a direct child of <body>, posthog-js
               inserts its lazy-loaded scripts before it — inside the React tree —
               causing hydration mismatches on reload. */}
-          <main className="relative flex min-h-screen flex-col">
-            <BlogThemeProvider
-              attribute="class"
-              defaultTheme="light"
-              enableSystem
-              disableTransitionOnChange
-              storageKey="blogs-theme"
-            >
-              <div className="blogs-theme min-h-screen">
-                <NavbarBlog />
-                {children}
-                <Toaster />
-              </div>
-            </BlogThemeProvider>
-          </main>
+          <QueryProvider>
+            <AuthProvider>
+              <main className="relative flex min-h-screen flex-col">
+                <BlogThemeProvider
+                  attribute="class"
+                  defaultTheme="light"
+                  enableSystem
+                  disableTransitionOnChange
+                  storageKey="blogs-theme"
+                >
+                  <div className="blogs-theme min-h-screen">
+                    <NavbarBlog />
+                    {children}
+                    <Toaster />
+                  </div>
+                  {/* Sign-in dialog, opened from the comments section. Portals
+                      to <body>; same component and flow as the main site. */}
+                  <LoginForm />
+                  <SonnerToaster />
+                </BlogThemeProvider>
+              </main>
+            </AuthProvider>
+          </QueryProvider>
           <GoogleAnalytics gaId={GA_ID} />
         </CSPostHogProvider>
       </body>

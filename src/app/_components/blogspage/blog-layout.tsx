@@ -37,6 +37,11 @@ const NewsletterCTA = dynamic(() => import("../news-letter-cta"), {
   ssr: false,
 });
 
+const BlogComments = dynamic(
+  () => import("./blog-comments").then((m) => m.BlogComments),
+  { ssr: false }
+);
+
 interface BlogLayoutProps {
   blog: any;
   relatedBlogs: any[];
@@ -245,6 +250,11 @@ export function BlogLayout({ blog, relatedBlogs }: BlogLayoutProps) {
         </div>
 
 
+
+        {/* ── Comments ─────────────────────────────────────────────────── */}
+        <section id="blog-comments" className="mb-14 scroll-mt-24">
+          <BlogComments blogId={blog.id} />
+        </section>
 
         {/* ── Newsletter CTA ───────────────────────────────────────────── */}
         <div className="mb-14">

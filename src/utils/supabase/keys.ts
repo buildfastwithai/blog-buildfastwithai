@@ -17,3 +17,23 @@ export function getSupabasePublishableKey() {
 
   return key;
 }
+
+export function getSupabaseSecretKey() {
+  const key = process.env.SUPABASE_SECRET_KEY;
+
+  if (!key) {
+    throw new Error("SUPABASE_SECRET_KEY is not set");
+  }
+
+  return key;
+}
+
+export function getLumaApiKey() {
+  const key = process.env.LUMA_API_KEY;
+
+  if (!key) {
+    throw new Error("LUMA_API_KEY is not set");
+  }
+
+  return key;
+}

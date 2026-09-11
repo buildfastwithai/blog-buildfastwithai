@@ -22,8 +22,9 @@ URL here, so existing backlinks keep working. This app also redirects
 
 - Next.js 16 (App Router, ISR), React 19, Tailwind v4, shadcn/ui
 - Supabase — same project and tables as the main site (`blogs`,
-  `blogs_category`, `blogs_curated`, `blogs_subscriber`, …), read with the
-  public publishable key. No auth, no sessions.
+  `blogs_category`, `blogs_curated`, `blogs_subscriber`, `blogs_comments`,
+  `users`, `login_tracking`, …). Same auth users: an account created on the
+  main site signs in here with the same credentials.
 - PostHog + GA + GTM + Meta Pixel with the same IDs as the main site.
 
 ## Local development
@@ -64,6 +65,9 @@ See [`.env.example`](.env.example). Notable:
 | `/api/blogs/subscribe`             | Newsletter signup (rate-limited)     |
 | `/api/events`                      | Luma calendar proxy (6h cache)       |
 | `/api/revalidate/blog`             | On-demand ISR purge (secret-gated)   |
+| `/auth/callback`                   | Google OAuth code exchange           |
+| `/auth/confirm`                    | Email confirmation link landing      |
+| `/auth/reset`                      | Set a new password (from reset mail) |
 
 ## What changed vs. the main-site version
 
@@ -71,9 +75,27 @@ See [`.env.example`](.env.example). Notable:
   are absolute URLs to `www.buildfastwithai.com` — see `src/lib/urls.ts`.
 - "Join waitlist" buttons that opened a modal on the main site now link to
   the corresponding program page there.
-- **Comments are not included.** They depend on the main site's login session,
-  which is not shared with this subdomain. Reintroducing them requires
-  cross-subdomain auth cookies (`Domain=.buildfastwithai.com`) on both apps.
+- **Comments and sign-in work the same way as on the main site** — same login
+  dialog (Google, or email → password / create account, forgot password),
+  same `blogs_comments` table, same Slack + reply-email notifications. The
+  session lives in cookies for this domain, so a reader signs in here once,
+  independently of the main site. The main site's anonymous-session data
+  transfers (resume analyses, course enrollments, …) are not part of the
+  blog and were left out.
+
+## Supabase configuration (one-time)
+
+Supabase only redirects back to URLs on its allow-list. In the Supabase
+dashboard → **Authentication → URL Configuration → Redirect URLs**, add:
+
+```
+https://blog.buildfastwithai.com/**
+http://localhost:3000/**        (or whichever port you use locally)
+```
+
+Without this, Google sign-in and email confirmation links bounce back to the
+main site instead of the blog. Google OAuth itself needs no change — the
+provider is configured at the Supabase project level.
 
 ## Deploy (Vercel)
 

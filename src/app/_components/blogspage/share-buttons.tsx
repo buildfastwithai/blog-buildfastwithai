@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Twitter, Linkedin, Link as LinkIcon, Check, ArrowUp } from "lucide-react";
+import { Twitter, Linkedin, Link as LinkIcon, Check, MessageCircle, ArrowUp } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
@@ -69,6 +69,15 @@ export function ShareButtons({ title, url, variant = "inline" }: ShareButtonsPro
     }
   };
 
+  const handleScrollToComments = () => {
+    const el = document.getElementById("blog-comments");
+    if (el) {
+      const offset = 80;
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
+
   const handleScrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -122,6 +131,17 @@ export function ShareButtons({ title, url, variant = "inline" }: ShareButtonsPro
         <div className="w-5 h-px bg-border my-1" />
 
         <button
+          onClick={handleScrollToComments}
+          title="Jump to comments"
+          className={cn(
+            "group flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200",
+            "text-muted-foreground hover:text-foreground hover:bg-muted"
+          )}
+        >
+          <MessageCircle className="w-4 h-4" />
+        </button>
+
+        <button
           onClick={handleScrollToTop}
           title="Back to top"
           className={cn(
@@ -165,6 +185,15 @@ export function ShareButtons({ title, url, variant = "inline" }: ShareButtonsPro
         title="Copy link"
       >
         {copied ? <Check className="w-4 h-4 text-green-500" /> : <LinkIcon className="w-4 h-4" />}
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleScrollToComments}
+        className="text-muted-foreground hover:text-foreground hover:bg-muted"
+        title="Jump to comments"
+      >
+        <MessageCircle className="w-4 h-4" />
       </Button>
     </div>
   );

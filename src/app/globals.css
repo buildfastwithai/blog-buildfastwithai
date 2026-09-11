@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "./cta-variables.css";
 @import "./blogs.css";
+@import "../styles/claude-course-theme.css";
 
 @custom-variant dark (&:is(.dark *));
 
