@@ -44,6 +44,13 @@ const config: NextConfig = {
       // Anyone who lands here with the old main-site path shape (e.g. a link
       // rewritten by hand to the new host but keeping /blogs/) still gets the
       // article instead of a 404.
+      // Order matters: first match wins, so the more specific rules go first.
+      // Both prefixes at once (an old URL rewritten to the new host by hand).
+      {
+        source: "/blogs/collection/:path*",
+        destination: "/:path*",
+        permanent: true,
+      },
       {
         source: "/blogs",
         destination: "/",
@@ -51,6 +58,12 @@ const config: NextConfig = {
       },
       {
         source: "/blogs/:path*",
+        destination: "/:path*",
+        permanent: true,
+      },
+      // Collections dropped the /collection/ prefix; they live at /<slug> now.
+      {
+        source: "/collection/:path*",
         destination: "/:path*",
         permanent: true,
       },

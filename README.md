@@ -12,11 +12,15 @@ with the `/blogs` prefix dropped: every article now lives at the root.
 | `www.buildfastwithai.com/blogs/<slug>`       | `blog.buildfastwithai.com/<slug>`           |
 | `www.buildfastwithai.com/blogs/all`          | `blog.buildfastwithai.com/all`              |
 | `www.buildfastwithai.com/blogs/all/page/N`   | `blog.buildfastwithai.com/all/page/N`       |
-| `www.buildfastwithai.com/blogs/collection/x` | `blog.buildfastwithai.com/collection/x`     |
+| `www.buildfastwithai.com/blogs/collection/x` | `blog.buildfastwithai.com/x`                |
 
-The main site keeps a permanent (308) redirect from `/blogs/*` to the matching
-URL here, so existing backlinks keep working. This app also redirects
-`/blogs/*` → `/*` in case a link is rewritten to the new host by hand.
+The main site keeps permanent (308) redirects from `/blogs/*` (and
+`/blogs/collection/*`) to the matching URL here, so existing backlinks keep
+working. This app also redirects `/blogs/*` and `/collection/*` → `/*` in case
+a link is rewritten to the new host by hand.
+
+Articles and collections share the root: `/[slug]` tries an article first,
+then a curated collection. Keep collection slugs distinct from article slugs.
 
 ## Stack
 
@@ -57,9 +61,9 @@ See [`.env.example`](.env.example). Notable:
 | Route                              | Cache                                |
 | ---------------------------------- | ------------------------------------ |
 | `/`                                | ISR, 1h                              |
-| `/[slug]`                          | ISR, 24h; newest 50 pre-built        |
+| `/[slug]`                          | Article or collection; ISR 24h       |
 | `/all`, `/all/page/[page]`         | ISR, 1h                              |
-| `/collection/[slug]` (+ `/page/N`) | ISR, 24h                             |
+| `/[slug]/page/[page]`              | Collection pagination; ISR 24h       |
 | `/sitemap.xml`, `/feed.xml`        | 24h / 1h                             |
 | `/api/blogs/list`                  | CDN-cached search/filter for `/all`  |
 | `/api/blogs/subscribe`             | Newsletter signup (rate-limited)     |

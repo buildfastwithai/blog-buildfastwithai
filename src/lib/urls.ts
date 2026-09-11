@@ -3,7 +3,7 @@
  * that is *not* a blog page — programs, tools, workshops — still lives on the
  * main site, so links to those must be absolute or they 404 here.
  *
- * Blog-internal links (posts, /all, /collection/*) stay relative.
+ * Blog-internal links (posts, collections, /all) stay relative.
  */
 export const MAIN_SITE_URL = "https://www.buildfastwithai.com";
 

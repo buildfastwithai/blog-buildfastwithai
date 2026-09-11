@@ -1,11 +1,15 @@
 import {
   getBlogBySlug,
+  getCuratedCollectionBySlug,
+  getCuratedCollectionsMeta,
   getPrebuildBlogSlugs,
   getRelatedBlogsByCategory,
 } from "@/actions/blog.actions";
 import { BlogLayout } from "@/app/_components/blogspage/blog-layout";
 import { BlogViewTracker } from "@/app/_components/blogspage/blog-view-tracker";
+import CollectionView from "@/app/_components/(collections-page)/collection-view";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { blogUrl, MAIN_SITE_URL } from "@/lib/urls";
 import {
   combineSchemas,
   generateArticleSchema,
@@ -13,10 +17,22 @@ import {
   generateFAQSchema,
   extractFAQsFromHTML,
 } from "@/utils/seo/json-ld";
-import { generateBlogMetadata } from "@/utils/seo/metadata";
+import {
+  generateBlogMetadata,
+  generateCollectionMetadata,
+} from "@/utils/seo/metadata";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { blogUrl, MAIN_SITE_URL } from "@/lib/urls";
+
+/**
+ * One route, two kinds of page.
+ *
+ * Articles and curated collections both live at the root of the blog domain
+ * (`/<article-slug>`, `/<collection-slug>`) — the old `/collection/` prefix is
+ * gone. An article is looked up first; if there is none, the slug is tried as
+ * a collection. If an article and a collection ever share a slug, the article
+ * wins, so keep collection slugs distinct when creating them.
+ */
 
 // Slugs not returned by generateStaticParams are rendered on the first request
 // and then cached like any other ISR page. Generation is blocking, so crawlers
@@ -30,7 +46,16 @@ export const dynamicParams = true;
 export const revalidate = 86400; // 24 hours
 
 export async function generateStaticParams() {
-  return getPrebuildBlogSlugs();
+  const [blogSlugs, collections] = await Promise.all([
+    getPrebuildBlogSlugs(),
+    // Metadata-only: this needs slugs, not every collection's long-form body.
+    getCuratedCollectionsMeta(),
+  ]);
+
+  return [
+    ...blogSlugs,
+    ...collections.map((c) => ({ slug: c.slug || String(c.id) })),
+  ];
 }
 
 export async function generateMetadata(props: {
@@ -39,20 +64,33 @@ export async function generateMetadata(props: {
   const params = await props.params;
   const blog = await getBlogBySlug(params.slug);
 
-  if (!blog) {
-    // noindex matters here: with dynamicParams every junk URL under /
-    // renders this branch, and we don't want them treated as thin content.
-    return {
-      title: "Article Not Found",
-      robots: { index: false, follow: false },
-    };
+  if (blog) {
+    return generateBlogMetadata({
+      blog,
+      categories: blog.categories ?? [],
+    });
   }
 
-  const categories = blog.categories ?? [];
-  return generateBlogMetadata({
-    blog,
-    categories,
-  });
+  const collection = await getCuratedCollectionBySlug(params.slug);
+
+  if (collection) {
+    return generateCollectionMetadata({
+      collectionName: collection.name || "Collection",
+      collectionDescription: collection.description || undefined,
+      collectionImageUrl: collection.image_url || undefined,
+      collectionId: collection.id,
+      slug: collection.slug,
+      metaTitle: collection.meta_title,
+      metaDescription: collection.meta_description,
+    });
+  }
+
+  // noindex matters here: with dynamicParams every junk URL under /
+  // renders this branch, and we don't want them treated as thin content.
+  return {
+    title: "Article Not Found",
+    robots: { index: false, follow: false },
+  };
 }
 
 export default async function BlogPage(props: {
@@ -62,7 +100,9 @@ export default async function BlogPage(props: {
   const blog = await getBlogBySlug(params.slug);
 
   if (!blog) {
-    notFound();
+    // Not an article — maybe a curated collection. CollectionView itself
+    // calls notFound() when the slug matches neither.
+    return <CollectionView slug={params.slug} page={1} />;
   }
 
   const categoryIds =

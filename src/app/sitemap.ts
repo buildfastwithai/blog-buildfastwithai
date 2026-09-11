@@ -60,7 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const collectionList =
     curatedCollections?.flatMap((collection) => {
-      const base = `${BLOG_SITE_URL}/collection/${collection.slug || collection.id}`;
+      const base = `${BLOG_SITE_URL}/${collection.slug || collection.id}`;
       const articleCount = (collection.blogs as any)?.[0]?.count ?? 0;
       const totalPages = Math.ceil(articleCount / BLOGS_PAGE_SIZE);
 

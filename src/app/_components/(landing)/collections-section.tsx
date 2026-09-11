@@ -51,7 +51,7 @@ const CollectionsSection: React.FC<CollectionsSectionProps> = ({
           {collections.map((collection) => (
             <Link
               key={collection.id}
-              href={`/collection/${collection.slug || collection.id}`}
+              href={`/${collection.slug || collection.id}`}
               prefetch={false}
               onClick={() =>
                 posthog.capture("blog_collection_clicked", {

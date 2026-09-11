@@ -27,8 +27,9 @@ function revalidateBlog(slugs: string[]) {
   revalidatePath("/");
   revalidatePath("/all");
   revalidatePath("/all/page/[page]", "page");
-  revalidatePath("/collection/[slug]", "page");
-  revalidatePath("/collection/[slug]/page/[page]", "page");
+  // Collections share the /[slug] route with articles.
+  revalidatePath("/[slug]", "page");
+  revalidatePath("/[slug]/page/[page]", "page");
 
   // Discovery surfaces.
   revalidatePath("/sitemap.xml");

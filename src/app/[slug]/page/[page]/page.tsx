@@ -7,7 +7,7 @@ import {
 } from "@/actions/blog.actions";
 import { generateCollectionMetadata } from "@/utils/seo/metadata";
 import { blogUrl } from "@/lib/urls";
-import CollectionView from "../../../../_components/(collections-page)/collection-view";
+import CollectionView from "@/app/_components/(collections-page)/collection-view";
 
 interface PageProps {
   params: Promise<{ slug: string; page: string }>;
@@ -17,6 +17,9 @@ export const dynamicParams = true;
 export const revalidate = 86400; // 24 hours
 
 /**
+ * Paginated curated collection: /<collection-slug>/page/N. Page 1 is the
+ * collection root, served by ../../page.tsx.
+ *
  * Pre-generate every page of every collection. Each is a small ISR entry, and
  * together they give crawlers a link path to every article in a collection —
  * previously only the first 12 were reachable.
@@ -68,7 +71,7 @@ export async function generateMetadata({
     alternates: {
       // Self-referencing canonical: paginated pages are their own content.
       canonical: blogUrl(
-        `/collection/${collection.slug || collection.id}/page/${pageNumber}`
+        `/${collection.slug || collection.id}/page/${pageNumber}`
       ),
     },
   };

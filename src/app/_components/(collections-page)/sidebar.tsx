@@ -40,7 +40,7 @@ export default function Sidebar({
         {recommendedCollections.map((collection) => (
           <Link
             key={collection.id}
-            href={`/collection/${collection.slug || collection.id}`}
+            href={`/${collection.slug || collection.id}`}
             className="group flex items-center gap-3 py-3"
           >
             {/* Thumbnail */}

@@ -64,7 +64,7 @@ export default async function CollectionView({
   // Out-of-range pages must 404, not render an empty grid.
   if (page > 1 && blogsPage.blogs.length === 0) notFound();
 
-  const basePath = `/collection/${collection.slug || collection.id}`;
+  const basePath = `/${collection.slug || collection.id}`;
   const canonical = page === 1 ? `${SITE}${basePath}` : `${SITE}${basePath}/page/${page}`;
   const isFirstPage = page === 1;
 

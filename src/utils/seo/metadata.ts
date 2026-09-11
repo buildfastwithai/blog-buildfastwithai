@@ -165,7 +165,7 @@ export function generateCollectionMetadata({
   baseUrl?: string;
 }): Metadata {
   const pathIdentifier = slug || collectionId;
-  const url = `${baseUrl}/collection/${pathIdentifier}`;
+  const url = `${baseUrl}/${pathIdentifier}`;
 
   // Use custom meta title if provided, otherwise fallback
   const title = metaTitle || `${collectionName} Articles & Guides | ${SITE_NAME}`;
