@@ -7,8 +7,9 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Logo from "@/components/header/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/user-menu";
+import MobileMenu from "./mobile-menu";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { usePostHog } from "posthog-js/react";
 import { mainSiteUrl } from "@/lib/urls";
 
@@ -75,6 +76,8 @@ export default function NavbarBlog() {
             <div onClick={() => posthog.capture("blog_navbar_theme_toggled")}>
               <ThemeToggle className="bg-background" />
             </div>
+            {/* Only renders when signed in */}
+            <UserMenu />
           </div>
 
           {/* Mobile: theme toggle + menu button */}
@@ -93,6 +96,7 @@ export default function NavbarBlog() {
             <div onClick={() => posthog.capture("blog_navbar_theme_toggled")}>
               <ThemeToggle className="bg-background animate-none h-8 w-8" />
             </div>
+            <UserMenu className="h-8 w-8" />
             <Button
               variant="ghost"
               size="icon"
@@ -109,42 +113,7 @@ export default function NavbarBlog() {
         </div>
       </header>
 
-      {/* Mobile sheet */}
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="bg-background">
-          <nav className="flex flex-col gap-6 pt-8">
-            {BLOG_NAV_LINKS.map(({ href, label, eventName }) => (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => handleLinkClick(eventName, href)}
-                className={cn(
-                  "text-base font-medium transition-colors hover:text-primary",
-                  pathname === href
-                    ? "text-foreground"
-                    : "text-muted-foreground",
-                )}
-              >
-                {label}
-              </Link>
-            ))}
-            <Link
-              href={AGENTIC_AI_HREF}
-              prefetch={false}
-              onClick={() => handleLinkClick("blog_navbar_agentic_launchpad_clicked", AGENTIC_AI_HREF)}
-              className={cn(
-                buttonVariants({ variant: "default" }),
-                "font-semibold text-center w-full mt-2 bg-primary text-primary-foreground"
-              )}
-            >
-              Agentic AI Launchpad
-            </Link>
-            <div className="pt-4 border-t" onClick={() => posthog.capture("blog_navbar_theme_toggled")}>
-              <ThemeToggle className="bg-background" />
-            </div>
-          </nav>
-        </SheetContent>
-      </Sheet>
+      <MobileMenu open={mobileOpen} onOpenChange={setMobileOpen} />
     </>
   );
 }

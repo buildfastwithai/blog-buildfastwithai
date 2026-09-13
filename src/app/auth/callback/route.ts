@@ -14,9 +14,23 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
 
-  let next = searchParams.get("next") ?? "/";
+  const cookieStore = await cookies();
 
-  if (!next.startsWith("/")) {
+  // Where to send the reader afterwards: the page they clicked "Continue with
+  // Google" on. The login form stores it in a cookie; a `next` query param is
+  // still honoured for links that carry one. Only same-site paths are allowed.
+  const rawLoginSource = cookieStore.get("login_source")?.value;
+  let loginSource = "/";
+  if (rawLoginSource) {
+    try {
+      loginSource = decodeURIComponent(rawLoginSource);
+    } catch {
+      loginSource = rawLoginSource;
+    }
+  }
+
+  let next = searchParams.get("next") ?? loginSource;
+  if (!next.startsWith("/") || next.startsWith("//")) {
     next = "/";
   }
 
@@ -26,8 +40,6 @@ export async function GET(request: Request) {
     const { error, data } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      const cookieStore = await cookies();
-      const loginSource = cookieStore.get("login_source")?.value || "/";
 
       // Fire and forget — don't block the redirect on tracking.
       if (data.user) {

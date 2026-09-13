@@ -3,7 +3,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Clock, Calendar, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import React from "react";
 import { usePostHog } from "posthog-js/react";
 
@@ -12,7 +11,7 @@ interface BlogHeaderProps {
   createdAt: string;
   readingTime: number;
   categories?: { id: number; name: string }[];
-  authorName?: string | null;
+
   shareSlot?: React.ReactNode;
 }
 
@@ -21,11 +20,9 @@ export function BlogHeader({
   createdAt,
   readingTime,
   categories,
-  authorName,
   shareSlot,
 }: BlogHeaderProps) {
   const posthog = usePostHog();
-  const author = authorName || "Satvik Paramkusam";
 
   return (
     <header className="flex flex-col items-start mb-8">
@@ -64,24 +61,8 @@ export function BlogHeader({
         id="blog-meta-bar"
         className="flex flex-wrap items-center justify-between gap-y-3 w-full mb-4"
       >
-        {/* Left: author + date + reading time */}
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
-          <Link
-            href="/author/satvik-paramkusam"
-            className="group/author flex items-center gap-2 hover:text-foreground transition-colors"
-          >
-            <div className="relative w-6 h-6 rounded-full overflow-hidden bg-primary/10 border border-primary/20 shrink-0">
-              <Image
-                src="/authors/satvik.png"
-                alt={author}
-                fill
-                sizes="24px"
-                className="object-cover"
-              />
-            </div>
-            <span className="font-medium text-foreground group-hover/author:text-primary transition-colors">{author}</span>
-          </Link>
-          <span className="w-1 h-1 rounded-full bg-border" />
+        {/* Left: date + reading time */}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4" />
             <span>
@@ -92,7 +73,6 @@ export function BlogHeader({
               })}
             </span>
           </div>
-          <span className="w-1 h-1 rounded-full bg-border" />
           <div className="flex items-center gap-1.5">
             <Clock className="w-4 h-4" />
             <span>{readingTime} min read</span>

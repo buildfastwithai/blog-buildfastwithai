@@ -96,23 +96,26 @@ export default function LoginForm() {
 				was_anonymous: false,
 			});
 
-			// Store login source in cookie for callback tracking
-			document.cookie = `login_source=${pathname}; path=/; max-age=600; SameSite=Lax`;
+			// Remember where the reader was. /auth/callback sends them back here.
+			// Carried in a cookie (not the redirect URL) so the redirectTo below
+			// stays a fixed, query-less URL that matches Supabase's allow-list
+			// exactly — if it doesn't match, Supabase falls back to the project's
+			// Site URL, i.e. the main site.
+			document.cookie = `login_source=${encodeURIComponent(pathname)}; path=/; max-age=600; SameSite=Lax`;
 
-			// Construct the full redirect URL
-			const fullRedirectUrl = getURL() + `auth/callback?next=${pathname}`;
+			// Must be on Supabase → Auth → URL Configuration → Redirect URLs
+			// (https://blog.buildfastwithai.com/**).
+			const fullRedirectUrl = `${getURL()}auth/callback`;
 
-			// Proceed with normal OAuth sign-in
-			supabase.auth.signInWithOAuth({
+			const { error } = await supabase.auth.signInWithOAuth({
 				provider,
 				options: {
 					redirectTo: fullRedirectUrl,
-					queryParams: {
-						redirect_path: pathname,
-					},
 					scopes: "https://www.googleapis.com/auth/userinfo.email",
 				},
 			});
+
+			if (error) throw error;
 		} catch (error) {
 			console.error("OAuth error:", error);
 			toast.error("Authentication failed. Please try again.", {

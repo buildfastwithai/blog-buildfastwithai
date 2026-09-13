@@ -6,7 +6,8 @@ const SITE_NAME = "Build Fast with AI";
 // Canonicals/OG URLs point at the blog subdomain — that is where these pages
 // are served from now. The main site only 308-redirects /blogs/* here.
 const SITE_URL = BLOG_SITE_URL;
-const DEFAULT_OG_IMAGE = `${SITE_URL}/opengraph-image.png`;
+// Rendered by src/app/opengraph-image.tsx (next/og).
+const DEFAULT_OG_IMAGE = `${SITE_URL}/opengraph-image`;
 
 /**
  * Generate metadata for individual blog posts
@@ -93,7 +94,7 @@ export function generateBlogMetadata({
   };
 }
 
-const BLOGS_OG_IMAGE = "https://auth.buildfastwithai.com/storage/v1/object/public/assets/images/blogs%20og%20image.png";
+const BLOGS_OG_IMAGE = DEFAULT_OG_IMAGE;
 
 /**
  * Generate metadata for blog listing page
