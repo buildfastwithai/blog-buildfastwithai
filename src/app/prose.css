@@ -1,0 +1,175 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Base article typography
+   ══════════════════════════════════════════════════════════════════════════
+   Carried over verbatim from the main site's globals.css — the rules that
+   give article HTML (rendered inside `.prose`) its heading weights, list
+   markers, link colour, table borders, etc. blogs.css only *recolours*
+   headings on top of this, so without it h2/h3 render at normal weight.
+
+   Must be imported BEFORE blogs.css so blogs.css's more specific
+   `.blog-content .prose …` rules win, exactly as on the main site. */
+
+.prose {
+  @apply max-w-none;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  @apply font-bold mb-4 mt-6;
+  color: #000000 !important; /* Black in light mode */
+}
+
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4,
+.dark .prose h5,
+.dark .prose h6 {
+  color: #ffffff !important; /* White in dark mode */
+}
+
+.prose h1 {
+  @apply text-3xl;
+}
+
+.prose h2 {
+  @apply text-2xl;
+}
+
+.prose h3 {
+  @apply text-xl;
+}
+
+.prose p,
+.prose ul,
+.prose ol {
+  @apply mb-4;
+  color: hsl(210, 10%, 20%); /* Dark text */
+}
+
+.prose ul,
+.prose ol {
+  @apply pl-6;
+}
+
+.prose ul {
+  @apply list-disc;
+}
+
+.prose ol {
+  @apply list-decimal;
+}
+
+.prose a {
+  @apply text-blue-600 hover:underline;
+}
+
+.dark .prose a {
+  @apply text-blue-400;
+}
+
+.dark .prose p {
+  @apply text-gray-300;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-gray-300 pl-4 italic my-4;
+  color: hsl(210, 10%, 30%); /* Softer text for blockquote */
+}
+
+.dark .prose blockquote {
+  @apply border-gray-700;
+  color: #fff;
+}
+
+.prose code {
+  @apply bg-gray-200 rounded px-1 py-0.5 text-black;
+  color: #000 !important;
+}
+
+.dark .prose code {
+  @apply bg-gray-200 text-black;
+  color: #000 !important;
+}
+
+.prose pre {
+  @apply bg-gray-200 rounded-lg p-4 overflow-x-auto text-black;
+  color: #000 !important;
+}
+
+.dark .prose pre {
+  @apply bg-gray-200 text-black;
+  color: #000 !important;
+}
+
+.prose img {
+  @apply w-full max-w-full h-auto rounded-lg my-4 object-contain;
+}
+
+.prose {
+  color: hsl(210, 10%, 20%); /* General text color for white background */
+}
+
+.prose strong {
+  color: hsl(210, 10%, 20%); /* Consistent strong text color */
+}
+
+.prose em {
+  color: hsl(210, 10%, 20%); /* Emphasized text */
+}
+
+.prose table {
+  @apply border-gray-300;
+}
+
+.prose thead {
+  @apply bg-gray-100 text-gray-900; /* Light header for contrast */
+}
+
+.prose tbody tr {
+  @apply border-b border-gray-300;
+}
+
+.prose tbody td {
+  @apply text-gray-800;
+}
+
+.prose hr {
+  @apply border-gray-300;
+}
+
+.dark .prose {
+  color: hsl(210, 10%, 85%) !important; /* Light gray for dark background */
+}
+
+.dark .prose strong {
+  color: hsl(210, 33%, 94%) !important;
+}
+
+.dark .prose em {
+  color: hsl(210, 78%, 96%) !important;
+}
+
+.dark .prose table {
+  @apply border-gray-700;
+}
+
+.dark .prose thead {
+  @apply bg-gray-800 text-gray-100;
+}
+
+.dark .prose tbody tr {
+  @apply border-b border-gray-700;
+}
+
+.dark .prose tbody td {
+  @apply text-gray-300;
+}
+
+.dark .prose hr {
+  @apply border-gray-700;
+}

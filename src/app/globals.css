@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "./cta-variables.css";
+@import "./prose.css";
 @import "./blogs.css";
 @import "../styles/claude-course-theme.css";
 
