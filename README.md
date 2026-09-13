@@ -49,7 +49,7 @@ See [`.env.example`](.env.example). Notable:
 - `NEXT_PUBLIC_SITE_URL` — public origin of the deployment. Drives canonicals,
   sitemap, RSS and JSON-LD. Defaults to `https://blog.buildfastwithai.com`.
 - `NEXT_PUBLIC_NOINDEX=true` — emits `noindex` on every page and a
-  disallow-all `robots.txt`. Set this on Vercel **preview** deployments, and on
+  disallow-all `robots.txt`. Non-production stages force it on; set it on
   production until you are ready for the new domain to be indexed.
 - `REVALIDATE_SECRET` — for `/api/revalidate/blog?slug=<slug>&secret=…`, which
   purges the ISR cache after publishing/editing a post.
@@ -101,14 +101,119 @@ Without this, Google sign-in and email confirmation links bounce back to the
 main site instead of the blog. Google OAuth itself needs no change — the
 provider is configured at the Supabase project level.
 
-## Deploy (Vercel)
+## Deploy (AWS CloudFront)
 
-1. Import this repo as a new Vercel project (framework: Next.js, package
-   manager: pnpm).
-2. Add the environment variables above. For **Preview** set
-   `NEXT_PUBLIC_NOINDEX=true`.
-3. Add the domain `blog.buildfastwithai.com` and create the CNAME it asks for.
-4. Deploy, then confirm `https://blog.buildfastwithai.com/<any-slug>` renders.
-5. Only after that, ship the main-site redirect (`/blogs/:path*` →
+The site runs on AWS behind CloudFront, built with [OpenNext](https://opennext.js.org/aws)
+and provisioned by [SST](https://sst.dev) (`sst.config.ts`):
+
+```
+blog.buildfastwithai.com
+  └─ CloudFront ── static assets ──▶ S3
+                ── /_next/image ───▶ Lambda (image optimizer)
+                ── everything else ▶ Lambda (Next.js server: SSR, ISR, API routes, proxy.ts)
+                                       └─ ISR cache: S3 + DynamoDB, revalidation via SQS → Lambda
+```
+
+Deploys are done by GitHub Actions (`.github/workflows/deploy.yml`):
+
+- **push to `main`** → `sst deploy --stage production` (the live site)
+- **Run workflow** (manual) → any other stage, e.g. `staging`, on its own
+  CloudFront URL with `noindex` forced on. Use this to preview before merging.
+- `.github/workflows/ci.yml` runs lint, typecheck and a `next build` on PRs.
+
+Every stage is an isolated set of AWS resources; production resources are
+`protect`ed and retained on removal.
+
+### One-time setup
+
+1. **AWS deploy role for GitHub (OIDC, no access keys).** With admin
+   credentials for the AWS account:
+
+   ```bash
+   aws cloudformation deploy --region ap-south-1 \
+     --stack-name blog-github-deploy \
+     --template-file infra/github-oidc.cfn.yml \
+     --capabilities CAPABILITY_NAMED_IAM
+   aws cloudformation describe-stacks --stack-name blog-github-deploy \
+     --query "Stacks[0].Outputs[?OutputKey=='DeployRoleArn'].OutputValue" --output text
+   ```
+
+   If the account already has the `token.actions.githubusercontent.com`
+   provider, add `--parameter-overrides CreateOidcProvider=false`.
+
+2. **TLS certificate for the subdomain.** `buildfastwithai.com`'s DNS is on
+   Google Cloud DNS, not Route53, so the certificate is created by hand.
+   CloudFront requires it in **us-east-1** regardless of the deploy region:
+
+   ```bash
+   aws acm request-certificate --region us-east-1 \
+     --domain-name blog.buildfastwithai.com --validation-method DNS
+   aws acm describe-certificate --region us-east-1 --certificate-arn <arn> \
+     --query "Certificate.DomainValidationOptions[0].ResourceRecord"
+   ```
+
+   Add the returned validation CNAME in Google Cloud DNS and wait for the
+   certificate status to become `ISSUED`. Keep the ARN.
+
+   _Alternative:_ delegate the `blog` subdomain to Route53 (create a hosted
+   zone `blog.buildfastwithai.com`, add its four NS records in Google Cloud
+   DNS) and skip this step and step 5 — SST issues the certificate and creates
+   the alias record itself when `BLOG_ACM_CERT_ARN` is unset.
+
+3. **GitHub environments.** In the repo → Settings → Environments create
+   `production` and `staging`. (Optionally add required reviewers on
+   `production`.) The OIDC trust policy only allows jobs running inside an
+   environment of this repo.
+
+   Secrets (per environment, or repository-wide):
+
+   | Secret                                 | Notes                                   |
+   | -------------------------------------- | --------------------------------------- |
+   | `AWS_DEPLOY_ROLE_ARN`                  | From step 1                             |
+   | `BLOG_ACM_CERT_ARN`                    | From step 2 (production only)           |
+   | `NEXT_PUBLIC_SUPABASE_URL`             | required                                |
+   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | required (also used by CI's build)      |
+   | `SUPABASE_SECRET_KEY`                  |                                         |
+   | `NEXT_PUBLIC_POSTHOG_KEY`              |                                         |
+   | `BLOG_SLACK_WEBHOOK_URL` / `SLACK_WEBHOOK_URL` |                                 |
+   | `RESEND_API_KEY`                       |                                         |
+   | `LUMA_API_KEY`                         |                                         |
+   | `REVALIDATE_SECRET`                    |                                         |
+
+   Variables (optional): `AWS_REGION` (default `ap-south-1`; pick the region
+   nearest the Supabase project), `NEXT_PUBLIC_SITE_URL`,
+   `NEXT_PUBLIC_NOINDEX` (production only — set `true` until the domain is
+   ready to be indexed), `BLOG_PREBUILD_COUNT`.
+
+4. **First deploy.** Push to `main` (or run the Deploy workflow with stage
+   `production`). SST creates its state bucket on the first run. The job
+   summary shows the site URL; the `cloudfrontUrl` output in the log is the
+   `d….cloudfront.net` host.
+
+5. **DNS.** In Google Cloud DNS add
+   `blog.buildfastwithai.com  CNAME  <d….cloudfront.net>`. Confirm
+   `https://blog.buildfastwithai.com/<any-slug>` renders.
+
+6. Only after that, ship the main-site redirect (`/blogs/:path*` →
    `https://blog.buildfastwithai.com/:path*`) so backlinks land on a working
-   page.
+   page, and flip `NEXT_PUBLIC_NOINDEX` off.
+
+### Deploying from a laptop
+
+Useful for a personal stage while iterating on infrastructure:
+
+```bash
+export AWS_PROFILE=…            # or any credentials with the same permissions as the deploy role
+set -a; source .env.local; set +a
+pnpm deploy:staging             # or: pnpm sst deploy --stage <your-name>
+pnpm sst remove --stage <your-name>   # tear it down afterwards
+```
+
+`pnpm sst dev` runs the app locally against the stage's AWS resources.
+
+### Cache purging
+
+`/api/revalidate/blog?slug=…&secret=…` works as before — `revalidatePath()`
+goes through OpenNext's revalidation queue and updates the ISR cache in S3;
+CloudFront honours the resulting cache headers. There is no need to invalidate
+CloudFront by hand after publishing a post.

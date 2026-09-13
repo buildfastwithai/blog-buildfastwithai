@@ -52,3 +52,7 @@ opencode.json
 .claude/
 .gemini-clipboard/
 .agents/
+
+# sst / open-next
+.sst/
+.open-next/

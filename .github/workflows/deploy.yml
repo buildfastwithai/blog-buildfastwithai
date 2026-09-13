@@ -1,0 +1,90 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: SST stage to deploy (e.g. staging). "production" is the live site.
+        required: true
+        default: staging
+
+permissions:
+  id-token: write # OIDC token for AWS
+  contents: read
+
+# One deploy per stage at a time; queued runs wait rather than cancel, so
+# every merged commit is deployed in order.
+concurrency:
+  group: deploy-${{ github.event.inputs.stage || 'production' }}
+  cancel-in-progress: false
+
+env:
+  STAGE: ${{ github.event.inputs.stage || 'production' }}
+
+jobs:
+  deploy:
+    name: Deploy ${{ github.event.inputs.stage || 'production' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # The GitHub environment holds the AWS role + app secrets and can require
+    # a manual approval for production (Settings → Environments).
+    environment:
+      name: ${{ github.event.inputs.stage || 'production' }}
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24 # matches the Lambda runtime SST uses
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'ap-south-1' }}
+
+      # SST keeps its state in an S3 bucket it creates on first run
+      # (sst-state-<account>-<region>), so no extra bootstrap step is needed.
+      - name: sst deploy
+        id: deploy
+        run: |
+          pnpm sst deploy --stage "$STAGE" 2>&1 | tee deploy.log
+          url=$(grep -E '^\s*url:' deploy.log | tail -1 | awk '{print $2}')
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION || 'ap-south-1' }}
+          # Domain (production only). Leave unset if the subdomain is
+          # delegated to Route53 — see README.
+          BLOG_ACM_CERT_ARN: ${{ secrets.BLOG_ACM_CERT_ARN }}
+          # Public
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL }}
+          NEXT_PUBLIC_NOINDEX: ${{ vars.NEXT_PUBLIC_NOINDEX }}
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+          # Server-only
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          BLOG_SLACK_WEBHOOK_URL: ${{ secrets.BLOG_SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          LUMA_API_KEY: ${{ secrets.LUMA_API_KEY }}
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+          BLOG_PREBUILD_COUNT: ${{ vars.BLOG_PREBUILD_COUNT }}
+
+      - name: Summary
+        run: |
+          {
+            echo "### Deployed \`$STAGE\`"
+            echo
+            echo "- URL: ${{ steps.deploy.outputs.url }}"
+            echo "- Commit: \`${GITHUB_SHA::7}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
