@@ -62,7 +62,7 @@ const CollectionsSection: React.FC<CollectionsSectionProps> = ({
               }
               className="group flex flex-col rounded-xl border border-border overflow-hidden bg-card hover:border-primary/40 hover:shadow-sm transition-all duration-200"
             >
-              <div className="relative aspect-[16/10] bg-muted overflow-hidden">
+              <div className="relative aspect-[16/9] bg-muted overflow-hidden">
                 {collection.image_url ? (
                   <Image
                     src={collection.image_url}

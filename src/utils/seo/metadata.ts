@@ -34,7 +34,10 @@ export function generateBlogMetadata({
     description: description || undefined,
     keywords,
     authors: [
-      { name: "Satvik Paramkusam" }
+      {
+        name: blog.author_name || "Satvik Paramkusam",
+        url: blog.author_url || `${baseUrl}/author/satvik-paramkusam`,
+      },
     ],
     creator: SITE_NAME,
     publisher: SITE_NAME,
@@ -47,6 +50,7 @@ export function generateBlogMetadata({
       description: description || "",
       url,
       siteName: SITE_NAME,
+      locale: "en_US",
       images: [
         {
           url: imageUrl,
@@ -67,7 +71,12 @@ export function generateBlogMetadata({
       card: "summary_large_image",
       title: blog.title || "",
       description: description || "",
-      images: [imageUrl],
+      images: [
+        {
+          url: imageUrl,
+          alt: blog.title || "",
+        },
+      ],
       creator: "@buildfastwithai",
       site: "@buildfastwithai",
     },
@@ -77,6 +86,8 @@ export function generateBlogMetadata({
       googleBot: {
         index: blog.published || false,
         follow: blog.published || false,
+        "max-image-preview": "large",
+        "max-snippet": -1,
       },
     },
   };
@@ -300,6 +311,70 @@ export function generateAllBlogsMetadata({
 }
 
 /**
+ * Generate metadata for author profile pages
+ */
+export function generateAuthorMetadata({
+  authorName,
+  authorBio,
+  slug,
+  baseUrl = SITE_URL,
+}: {
+  authorName: string;
+  authorBio?: string;
+  slug: string;
+  baseUrl?: string;
+}): Metadata {
+  const url = `${baseUrl}/author/${slug}`;
+  const title = `${authorName} - Author & AI Engineer | ${SITE_NAME}`;
+  const description =
+    authorBio ||
+    `Read all articles, deep-dive tutorials, and guides written by ${authorName} on ${SITE_NAME}.`;
+
+  return {
+    title,
+    description,
+    keywords: `${authorName}, ${authorName} blog, AI engineering, generative AI, Build Fast with AI`,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      type: "profile",
+      title,
+      description,
+      url,
+      siteName: SITE_NAME,
+      locale: "en_US",
+      images: [
+        {
+          url: BLOGS_OG_IMAGE,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [BLOGS_OG_IMAGE],
+      creator: "@buildfastwithai",
+      site: "@buildfastwithai",
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
+  };
+}
+
+/**
  * Calculate reading time based on word count
  */
 export function calculateReadingTime(content: string): number {
@@ -314,3 +389,4 @@ export function calculateReadingTime(content: string): number {
 export function extractTextFromHtml(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
+

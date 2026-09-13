@@ -103,7 +103,7 @@ function MinimalBlogCard({ blog }: { blog: BlogCardData }) {
       }}
     >
       {/* Image */}
-      <div className="relative aspect-[16/10] rounded-xl overflow-hidden mb-4 bg-muted">
+      <div className="relative aspect-[16/9] rounded-xl overflow-hidden mb-4 bg-muted">
         {blog.image_url ? (
           <Image
             src={blog.image_url}

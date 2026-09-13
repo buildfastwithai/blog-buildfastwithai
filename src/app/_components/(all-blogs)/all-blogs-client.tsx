@@ -150,7 +150,7 @@ export default function AllBlogsClient({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="animate-pulse">
-                <div className="aspect-[16/10] rounded-xl bg-muted mb-4" />
+                <div className="aspect-[16/9] rounded-xl bg-muted mb-4" />
                 <div className="h-4 w-2/3 rounded bg-muted" />
               </div>
             ))}

@@ -28,7 +28,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [{ data: blogs }, { data: curatedCollections }] = await Promise.all([
     supabase
       .from("blogs")
-      .select("slug, image_url, created_at, is_founder_corner, published")
+      .select("slug, image_url, extra_image_urls, created_at, is_founder_corner, published")
       .eq("published", true),
     supabase
       .from("blogs_curated")
@@ -36,16 +36,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const blogList =
-    blogs?.map((item) => ({
-      url: `${BLOG_SITE_URL}/${item.slug}`,
-      lastModified: item.created_at ? new Date(item.created_at) : new Date(),
-      changeFrequency: "weekly" as const,
-      priority: calculateBlogPriority(
-        item.created_at || new Date().toISOString(),
-        item.is_founder_corner || false,
-      ),
-      images: item.image_url ? [item.image_url] : undefined,
-    })) ?? [];
+    blogs?.map((item) => {
+      const images: string[] = [];
+      if (item.image_url) images.push(item.image_url);
+      if (Array.isArray((item as any).extra_image_urls)) {
+        images.push(...(item as any).extra_image_urls.filter(Boolean));
+      }
+
+      return {
+        url: `${BLOG_SITE_URL}/${item.slug}`,
+        lastModified: item.created_at ? new Date(item.created_at) : new Date(),
+        changeFrequency: "weekly" as const,
+        priority: calculateBlogPriority(
+          item.created_at || new Date().toISOString(),
+          item.is_founder_corner || false,
+        ),
+        images: images.length > 0 ? images : undefined,
+      };
+    }) ?? [];
 
   const totalArchivePages = Math.ceil((blogs?.length ?? 0) / BLOGS_PAGE_SIZE);
   const archivePages = Array.from(
@@ -82,6 +90,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ];
     }) ?? [];
 
+  const authorPages = [
+    {
+      url: `${BLOG_SITE_URL}/author/satvik-paramkusam`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    },
+    ...Array.from(
+      { length: Math.max(0, totalArchivePages - 1) },
+      (_, i) => ({
+        url: `${BLOG_SITE_URL}/author/satvik-paramkusam/page/${i + 2}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly" as const,
+        priority: 0.5,
+      }),
+    ),
+  ];
+
   return [
     {
       url: BLOG_SITE_URL,
@@ -95,6 +121,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.8,
     },
+    ...authorPages,
     ...blogList,
     ...archivePages,
     ...collectionList,

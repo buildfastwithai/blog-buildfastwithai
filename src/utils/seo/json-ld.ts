@@ -7,6 +7,15 @@ type WithGraph = {
 type JsonLdObject = Record<string, unknown> | WithGraph;
 
 /**
+ * Helper to count words in plain text extracted from HTML content
+ */
+function getWordCount(html: string | null | undefined): number {
+  if (!html) return 0;
+  const text = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return text ? text.split(/\s+/).length : 0;
+}
+
+/**
  * Generate Article schema for blog posts
  */
 export function generateArticleSchema({
@@ -29,11 +38,17 @@ export function generateArticleSchema({
   const modifiedDate =
     (blog as any).updated_at || blog.created_at || new Date().toISOString();
 
+  const wordCount = getWordCount(blog.content);
+  const readingTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
+
   return {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: blog.title || "",
     description: blog.excerpt || "",
+    inLanguage: "en-US",
+    ...(wordCount > 0 ? { wordCount } : {}),
+    timeRequired: `PT${readingTimeMinutes}M`,
     image: blog.image_url
       ? {
         "@type": "ImageObject",
@@ -47,7 +62,13 @@ export function generateArticleSchema({
     author: {
       "@type": "Person",
       name: blog.author_name || authorName,
-      url: blog.author_url || "https://www.buildfastwithai.com/about", // Generic author URL or add specific author bio URL if available
+      url: blog.author_url || "https://blog.buildfastwithai.com/author/satvik-paramkusam",
+      sameAs: [
+        "https://www.linkedin.com/in/satvikparamkusham/",
+        "https://www.linkedin.com/company/build-fast-with-ai",
+        "https://x.com/buildfastwithai",
+        "https://www.buildfastwithai.com/about",
+      ],
     },
     publisher: {
       "@type": "Organization",
@@ -61,6 +82,10 @@ export function generateArticleSchema({
       "@type": "WebPage",
       "@id": url,
     },
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["#blog-title", ".blog-content > p:first-of-type"],
+    },
     keywords: blog.meta_keywords
       ? blog.meta_keywords
       : categories && categories.length > 0
@@ -71,9 +96,6 @@ export function generateArticleSchema({
         articleSection: categories.map((cat) => cat.name),
       }
       : {}),
-    // No interactionStatistic: read counts now live in PostHog, so anything
-    // stored on the row is a frozen snapshot. Stale counts in structured data
-    // are worse than omitting the field.
   };
 }
 
@@ -118,6 +140,44 @@ export function generateCollectionPageSchema({
     description,
     url,
     ...(numberOfItems ? { numberOfItems } : {}),
+  };
+}
+
+/**
+ * Generate Person schema for Author profile pages
+ */
+export function generatePersonSchema({
+  name,
+  jobTitle,
+  url,
+  image,
+  description,
+  sameAs = [],
+  worksFor = "Build Fast with AI",
+}: {
+  name: string;
+  jobTitle?: string;
+  url: string;
+  image?: string;
+  description?: string;
+  sameAs?: string[];
+  worksFor?: string;
+}): JsonLdObject {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": `${url}#person`,
+    name,
+    ...(jobTitle ? { jobTitle } : {}),
+    url,
+    ...(image ? { image } : {}),
+    ...(description ? { description } : {}),
+    ...(sameAs && sameAs.length > 0 ? { sameAs } : {}),
+    worksFor: {
+      "@type": "Organization",
+      name: worksFor,
+      url: "https://www.buildfastwithai.com",
+    },
   };
 }
 

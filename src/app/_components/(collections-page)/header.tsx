@@ -76,7 +76,7 @@ export default function Header({
 
         {/* Image — page 1 only */}
         {!isPaginated && image_url && (
-          <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-muted">
+          <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-muted">
             <Image
               src={image_url}
               alt={title}

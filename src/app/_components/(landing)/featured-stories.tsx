@@ -28,7 +28,7 @@ const FeaturedStories: React.FC<FeaturedStoriesProps> = ({
             prefetch={false}
           >
             {/* Image */}
-            <div className="relative aspect-[16/10] rounded-xl overflow-hidden mb-5 bg-muted">
+            <div className="relative aspect-[16/9] rounded-xl overflow-hidden mb-5 bg-muted">
               {post.imageUrl ? (
                 <Image
                   src={post.imageUrl}

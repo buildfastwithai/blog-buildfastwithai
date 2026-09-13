@@ -151,7 +151,42 @@ export function BlogContent({ content, blogTitle, onHeadingsChange, onActiveCtas
       }
     );
 
-    return { processedContent: newContent, headings: extractedHeadings };
+    // ── Step 2: Optimize in-content images and external links for SEO ──
+    const fallbackAlt = blogTitle ? `${blogTitle} illustration` : "Article illustration";
+    const optimizedContent = newContent
+      // Add loading="lazy", decoding="async", and alt fallback to <img>
+      .replace(/<img\b([^>]*)>/gi, (match, attrs) => {
+        let newAttrs = attrs;
+        if (!/loading\s*=/i.test(newAttrs)) newAttrs += ' loading="lazy"';
+        if (!/decoding\s*=/i.test(newAttrs)) newAttrs += ' decoding="async"';
+        if (!/alt\s*=\s*["'][^"']+["']/i.test(newAttrs)) {
+          if (/alt\s*=\s*["']\s*["']/i.test(newAttrs)) {
+            newAttrs = newAttrs.replace(/alt\s*=\s*["']\s*["']/i, `alt="${fallbackAlt}"`);
+          } else {
+            newAttrs += ` alt="${fallbackAlt}"`;
+          }
+        }
+        return `<img${newAttrs}>`;
+      })
+      // Add rel="noopener noreferrer" & target="_blank" to external <a> links
+      .replace(/<a\b([^>]*)>/gi, (match, attrs) => {
+        const hrefMatch = attrs.match(/href\s*=\s*["']([^"']+)["']/i);
+        if (hrefMatch) {
+          const href = hrefMatch[1];
+          const isExternal = href.startsWith("http://") || href.startsWith("https://");
+          const isInternal = href.includes("buildfastwithai.com") || href.startsWith("/");
+
+          if (isExternal && !isInternal) {
+            let newAttrs = attrs;
+            if (!/rel\s*=/i.test(newAttrs)) newAttrs += ' rel="noopener noreferrer"';
+            if (!/target\s*=/i.test(newAttrs)) newAttrs += ' target="_blank"';
+            return `<a${newAttrs}>`;
+          }
+        }
+        return match;
+      });
+
+    return { processedContent: optimizedContent, headings: extractedHeadings };
   }, [content, blogTitle]);
 
   useEffect(() => {

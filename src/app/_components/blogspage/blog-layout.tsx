@@ -29,6 +29,8 @@ const YouMightAlsoLike = dynamic(() => import("./you-may-be-like"), {
   loading: () => <div className="h-64 animate-pulse bg-muted rounded-lg" />,
 });
 
+import AuthorBio from "./author-bio";
+
 
 
 
@@ -186,6 +188,7 @@ export function BlogLayout({ blog, relatedBlogs }: BlogLayoutProps) {
           createdAt={blog.created_at}
           readingTime={readingTime}
           categories={blog.categories}
+          authorName={blog.author_name}
           shareSlot={<ShareButtons title={blog.title} variant="inline" />}
         />
 
@@ -238,6 +241,9 @@ export function BlogLayout({ blog, relatedBlogs }: BlogLayoutProps) {
 
         {/* ── Post-article divider ──────────────────────────────────────── */}
         <div id="article-end-trigger" className="mt-14 mb-12 border-t border-border" />
+
+        {/* ── Author Bio (E-E-A-T Signal) ───────────────────────────────── */}
+        <AuthorBio authorName={blog.author_name} authorUrl={blog.author_url} />
 
         {/* ── Bottom share bar (below article) ─────────────────────────── */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-14 w-full">

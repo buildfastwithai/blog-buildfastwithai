@@ -62,7 +62,7 @@ const Hero: React.FC<HeroProps> = ({ featuredPost }) => {
 
         {/* Right: Image - 6 cols */}
         <div className="lg:col-span-6 order-1 lg:order-2">
-          <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-muted">
+          <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-muted">
             {featuredPost.imageUrl ? (
               <Image
                 src={featuredPost.imageUrl}
