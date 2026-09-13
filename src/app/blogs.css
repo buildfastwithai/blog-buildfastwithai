@@ -502,6 +502,62 @@
     @apply font-sans;
   }
 
+  /* ─── Heading Scale ──────────────────────────────────────────────────────── */
+  /* Base .prose gives h1/h2 30px/24px — too close to tell apart next to 21px
+     body copy. A clear step between levels so the outline reads at a glance.
+     Sizes are px (not em) so they don't inherit the body's font-size. */
+  .blog-content .prose h1 {
+    font-size: 2.375rem; /* 38px */
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    margin-bottom: 0.6em !important;
+  }
+
+  /* The first h1 sits directly under the article header — no extra gap. */
+  .blog-content .prose > h1:first-child {
+    margin-top: 0 !important;
+  }
+
+  .blog-content .prose h2 {
+    font-size: 1.875rem; /* 30px */
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    font-weight: 700;
+  }
+
+  .blog-content .prose h3 {
+    font-size: 1.4375rem; /* 23px */
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    font-weight: 600;
+  }
+
+  .blog-content .prose h4 {
+    font-size: 1.1875rem; /* 19px */
+    line-height: 1.35;
+    font-weight: 600;
+  }
+
+  .blog-content .prose h5,
+  .blog-content .prose h6 {
+    font-size: 1.0625rem; /* 17px */
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  @media (max-width: 640px) {
+    .blog-content .prose h1 {
+      font-size: 1.875rem; /* 30px */
+    }
+    .blog-content .prose h2 {
+      font-size: 1.5rem; /* 24px */
+    }
+    .blog-content .prose h3 {
+      font-size: 1.25rem; /* 20px */
+    }
+  }
+
 
   /* Unordered lists */
   .blog-content .prose ul,
