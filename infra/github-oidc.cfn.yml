@@ -1,0 +1,86 @@
+# One-time bootstrap: lets GitHub Actions in buildfastwithai/blog-buildfastwithai
+# deploy to this AWS account without long-lived access keys.
+#
+# Creates the GitHub OIDC identity provider (skip with CreateOidcProvider=false
+# if the account already has one) and an IAM role the deploy workflow assumes.
+#
+#   aws cloudformation deploy \
+#     --region ap-south-1 \
+#     --stack-name blog-github-deploy \
+#     --template-file infra/github-oidc.cfn.yml \
+#     --capabilities CAPABILITY_NAMED_IAM
+#
+#   aws cloudformation describe-stacks --stack-name blog-github-deploy \
+#     --query "Stacks[0].Outputs[?OutputKey=='DeployRoleArn'].OutputValue" --output text
+#
+# Put the printed ARN in the repo's AWS_DEPLOY_ROLE_ARN secret.
+#
+# The role has AdministratorAccess: SST provisions CloudFront, Lambda, S3,
+# SQS, DynamoDB, IAM roles, ACM and CloudWatch, and its own state bucket, and
+# the exact set changes with SST releases. Scope it down once the resource
+# set has settled if the account is shared with anything else.
+AWSTemplateFormatVersion: "2010-09-09"
+Description: GitHub Actions OIDC deploy role for blog.buildfastwithai.com (SST)
+
+Parameters:
+  GitHubOrg:
+    Type: String
+    Default: buildfastwithai
+  GitHubRepo:
+    Type: String
+    Default: blog-buildfastwithai
+  RoleName:
+    Type: String
+    Default: blog-buildfastwithai-github-deploy
+  CreateOidcProvider:
+    Type: String
+    Default: "true"
+    AllowedValues: ["true", "false"]
+    Description: Set to "false" if token.actions.githubusercontent.com is already registered in this account.
+
+Conditions:
+  ShouldCreateProvider: !Equals [!Ref CreateOidcProvider, "true"]
+
+Resources:
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Condition: ShouldCreateProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      # GitHub's cert chain is pinned by AWS now; the value is still required.
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+
+  DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref RoleName
+      Description: Assumed by GitHub Actions (deploy.yml) to run `sst deploy`.
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !If
+                - ShouldCreateProvider
+                - !Ref GitHubOidcProvider
+                - !Sub arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                # Only jobs that run inside a GitHub *environment* of this repo
+                # (deploy.yml uses `environment: production` / `staging`).
+                token.actions.githubusercontent.com:sub:
+                  - !Sub repo:${GitHubOrg}/${GitHubRepo}:environment:*
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+Outputs:
+  DeployRoleArn:
+    Description: Store as the AWS_DEPLOY_ROLE_ARN GitHub secret.
+    Value: !GetAtt DeployRole.Arn

@@ -1,0 +1,5 @@
+# pnpm 11 blocks dependency build scripts unless allowed here.
+allowBuilds:
+  # Ships a native binary; without its postinstall Tailwind falls back to (slow) WASM.
+  '@tailwindcss/oxide': true
+  core-js: false
