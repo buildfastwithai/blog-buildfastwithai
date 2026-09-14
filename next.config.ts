@@ -39,6 +39,19 @@ const config: NextConfig = {
   },
   // Required so PostHog's trailing-slash API requests aren't redirected.
   skipTrailingSlashRedirect: true,
+  async headers() {
+    return [
+      {
+        // Responses here carry a user's session cookies. They are dynamic
+        // already, but make it explicit so no CDN or proxy ever stores one.
+        source: "/auth/:path*",
+        headers: [
+          { key: "Cache-Control", value: "private, no-cache, no-store, max-age=0, must-revalidate" },
+          { key: "CDN-Cache-Control", value: "no-store" },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       // Anyone who lands here with the old main-site path shape (e.g. a link

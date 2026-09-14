@@ -87,6 +87,14 @@ See [`.env.example`](.env.example). Notable:
   transfers (resume analyses, course enrollments, …) are not part of the
   blog and were left out.
 
+## Sessions and caching (important)
+
+Pages are cached by the CDN and shared between visitors. Therefore **nothing
+that runs on a page request may write session cookies** — no Supabase
+session-refresh middleware. A cached response carrying `Set-Cookie` logs every
+subsequent visitor in as that user. Sessions are refreshed by the browser
+client and inside server actions only. `/auth/*` is forced `no-store`.
+
 ## Supabase configuration (one-time)
 
 Supabase only redirects back to URLs on its allow-list. In the Supabase

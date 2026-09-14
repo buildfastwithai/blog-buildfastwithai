@@ -1,3 +1,16 @@
+/**
+ * Cookie-based Supabase client for server actions and route handlers ONLY.
+ *
+ * There is deliberately NO session-refresh middleware (proxy.ts) in this app.
+ * Pages are cached at the CDN (ISR / CloudFront). A middleware that refreshes
+ * tokens attaches `Set-Cookie: sb-…-auth-token=<that user's session>` to the
+ * page response, and a shared cache then hands that cookie — and that login —
+ * to every other visitor. This happened in production. Never reintroduce it.
+ *
+ * Sessions stay fresh without it: the browser client auto-refreshes and
+ * persists cookies, and this server client refreshes inside server actions
+ * (POST, never cached) via setAll below.
+ */
 import { createServerClient } from "@supabase/ssr";
 import type { User } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
