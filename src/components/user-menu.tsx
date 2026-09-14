@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { LogOut } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 import { usePostHog } from "posthog-js/react";
 import { toast } from "sonner";
 import {
@@ -109,6 +110,9 @@ export function UserAvatar({
 export function UserMenu({ className }: { className?: string }) {
   const { data: user, isLoading } = useUser();
   const { signOut, signingOut } = useSignOut();
+  const { resolvedTheme, setTheme } = useTheme();
+  const posthog = usePostHog();
+  const isDark = resolvedTheme === "dark";
 
   if (isLoading || !user || user.is_anonymous) return null;
 
@@ -144,6 +148,19 @@ export function UserMenu({ className }: { className?: string }) {
             )}
           </div>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {/* Theme lives here for signed-in readers; the navbar shows the
+            standalone toggle only while signed out. */}
+        <DropdownMenuItem
+          onSelect={(event) => {
+            event.preventDefault(); // keep the menu open while switching
+            setTheme(isDark ? "light" : "dark");
+            posthog?.capture("blog_navbar_theme_toggled", { source: "user_menu" });
+          }}
+        >
+          {isDark ? <Sun /> : <Moon />}
+          {isDark ? "Light mode" : "Dark mode"}
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={(event) => {

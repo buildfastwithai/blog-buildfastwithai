@@ -8,6 +8,7 @@ import Link from "next/link";
 import Logo from "@/components/header/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
+import { useUser } from "@/hooks/use-user";
 import MobileMenu from "./mobile-menu";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { usePostHog } from "posthog-js/react";
@@ -25,6 +26,10 @@ export default function NavbarBlog() {
   const pathname = usePathname();
   const posthog = usePostHog();
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Signed-in readers switch theme from the avatar menu instead; the bar shows
+  // the standalone toggle only while signed out (and while we don't know yet).
+  const { data: user } = useUser();
+  const signedOut = !user || user.is_anonymous;
 
   const handleLinkClick = (eventName: string, href: string) => {
     posthog.capture(eventName, {
@@ -73,9 +78,11 @@ export default function NavbarBlog() {
             >
               Agentic AI Launchpad
             </Link>
-            <div onClick={() => posthog.capture("blog_navbar_theme_toggled")}>
-              <ThemeToggle className="bg-background" />
-            </div>
+            {signedOut && (
+              <div onClick={() => posthog.capture("blog_navbar_theme_toggled")}>
+                <ThemeToggle className="bg-background" />
+              </div>
+            )}
             {/* Only renders when signed in */}
             <UserMenu />
           </div>
@@ -84,9 +91,11 @@ export default function NavbarBlog() {
               lives inside the menu on small screens — the bar is too narrow
               for a button, avatar, toggle and hamburger side by side. */}
           <div className="flex items-center gap-2 lg:hidden">
-            <div onClick={() => posthog.capture("blog_navbar_theme_toggled")}>
-              <ThemeToggle className="bg-background animate-none h-8 w-8" />
-            </div>
+            {signedOut && (
+              <div onClick={() => posthog.capture("blog_navbar_theme_toggled")}>
+                <ThemeToggle className="bg-background animate-none h-8 w-8" />
+              </div>
+            )}
             <UserMenu className="h-8 w-8" />
             <Button
               variant="ghost"
