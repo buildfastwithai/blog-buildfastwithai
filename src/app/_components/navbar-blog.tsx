@@ -80,19 +80,10 @@ export default function NavbarBlog() {
             <UserMenu />
           </div>
 
-          {/* Mobile: theme toggle + menu button */}
+          {/* Mobile: theme toggle + account + menu button. The Launchpad CTA
+              lives inside the menu on small screens — the bar is too narrow
+              for a button, avatar, toggle and hamburger side by side. */}
           <div className="flex items-center gap-2 lg:hidden">
-            <Link
-              href={AGENTIC_AI_HREF}
-              prefetch={false}
-              onClick={() => handleLinkClick("blog_navbar_agentic_launchpad_clicked", AGENTIC_AI_HREF)}
-              className={cn(
-                buttonVariants({ variant: "default", size: "sm" }),
-                "text-xs px-3 h-8 font-semibold bg-primary text-primary-foreground"
-              )}
-            >
-              Agentic AI Launchpad
-            </Link>
             <div onClick={() => posthog.capture("blog_navbar_theme_toggled")}>
               <ThemeToggle className="bg-background animate-none h-8 w-8" />
             </div>
