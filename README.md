@@ -190,7 +190,7 @@ Every stage is an isolated set of AWS resources; production resources are
    summary shows the site URL; the `cloudfrontUrl` output in the log is the
    `d….cloudfront.net` host.
 
-5. **DNS.** In Google Cloud DNS add
+5. **DNS.** In Squarespace DNS add
    `blog.buildfastwithai.com  CNAME  <d….cloudfront.net>`. Confirm
    `https://blog.buildfastwithai.com/<any-slug>` renders.
 
