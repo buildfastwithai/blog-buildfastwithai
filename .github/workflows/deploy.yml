@@ -57,6 +57,7 @@ jobs:
       - name: sst deploy
         id: deploy
         run: |
+          set -o pipefail # fail the step when sst fails, not just tee
           pnpm sst deploy --stage "$STAGE" 2>&1 | tee deploy.log
           url=$(grep -E '^\s*url:' deploy.log | tail -1 | awk '{print $2}')
           echo "url=$url" >> "$GITHUB_OUTPUT"

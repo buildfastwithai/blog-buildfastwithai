@@ -142,7 +142,7 @@ Every stage is an isolated set of AWS resources; production resources are
    provider, add `--parameter-overrides CreateOidcProvider=false`.
 
 2. **TLS certificate for the subdomain.** `buildfastwithai.com`'s DNS is on
-   Google Cloud DNS, not Route53, so the certificate is created by hand.
+   Squarespace, not Route53, so the certificate is created by hand.
    CloudFront requires it in **us-east-1** regardless of the deploy region:
 
    ```bash
@@ -152,11 +152,11 @@ Every stage is an isolated set of AWS resources; production resources are
      --query "Certificate.DomainValidationOptions[0].ResourceRecord"
    ```
 
-   Add the returned validation CNAME in Google Cloud DNS and wait for the
+   Add the returned validation CNAME in Squarespace DNS and wait for the
    certificate status to become `ISSUED`. Keep the ARN.
 
    _Alternative:_ delegate the `blog` subdomain to Route53 (create a hosted
-   zone `blog.buildfastwithai.com`, add its four NS records in Google Cloud
+   zone `blog.buildfastwithai.com`, add its four NS records in Squarespace
    DNS) and skip this step and step 5 — SST issues the certificate and creates
    the alias record itself when `BLOG_ACM_CERT_ARN` is unset.
 
