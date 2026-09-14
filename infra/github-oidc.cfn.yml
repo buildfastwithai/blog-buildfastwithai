@@ -29,6 +29,15 @@ Parameters:
   GitHubRepo:
     Type: String
     Default: blog-buildfastwithai
+  # GitHub can issue "immutable" subject claims that pin the org/repo IDs
+  # (repo:org@ID/repo@ID:...). Both forms are trusted. Look the IDs up with
+  #   gh api repos/<org>/<repo>/actions/oidc/customization/sub
+  GitHubOrgId:
+    Type: String
+    Default: "164294848"
+  GitHubRepoId:
+    Type: String
+    Default: "1365969351"
   RoleName:
     Type: String
     Default: blog-buildfastwithai-github-deploy
@@ -77,6 +86,7 @@ Resources:
                 # (deploy.yml uses `environment: production` / `staging`).
                 token.actions.githubusercontent.com:sub:
                   - !Sub repo:${GitHubOrg}/${GitHubRepo}:environment:*
+                  - !Sub repo:${GitHubOrg}@${GitHubOrgId}/${GitHubRepo}@${GitHubRepoId}:environment:*
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AdministratorAccess
 
