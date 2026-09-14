@@ -50,7 +50,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION || 'ap-south-1' }}
+          aws-region: ${{ vars.AWS_REGION || 'us-west-1' }}
 
       # SST keeps its state in an S3 bucket it creates on first run
       # (sst-state-<account>-<region>), so no extra bootstrap step is needed.
@@ -61,7 +61,7 @@ jobs:
           url=$(grep -E '^\s*url:' deploy.log | tail -1 | awk '{print $2}')
           echo "url=$url" >> "$GITHUB_OUTPUT"
         env:
-          AWS_REGION: ${{ vars.AWS_REGION || 'ap-south-1' }}
+          AWS_REGION: ${{ vars.AWS_REGION || 'us-west-1' }}
           # Domain (production only). Leave unset if the subdomain is
           # delegated to Route53 — see README.
           BLOG_ACM_CERT_ARN: ${{ secrets.BLOG_ACM_CERT_ARN }}

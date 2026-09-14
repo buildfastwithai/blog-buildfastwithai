@@ -57,7 +57,7 @@ export default $config({
         aws: {
           // Pick the region closest to the Supabase project — every SSR
           // request makes several Supabase round-trips.
-          region: (process.env.AWS_REGION ?? "ap-south-1") as any,
+          region: (process.env.AWS_REGION ?? "us-west-1") as any,
         },
       },
     };
