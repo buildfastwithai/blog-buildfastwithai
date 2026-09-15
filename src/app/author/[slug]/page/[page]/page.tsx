@@ -40,6 +40,14 @@ export async function generateMetadata(props: {
     alternates: {
       canonical: `${BLOG_SITE_URL}/author/${author.slug}/page/${page}`,
     },
+    // With a single author these pages list exactly what /all/page/N lists.
+    // Keep them crawlable so links to posts are followed, but do not index a
+    // second copy of the archive.
+    robots: {
+      index: false,
+      follow: true,
+      googleBot: { index: false, follow: true },
+    },
   };
 }
 

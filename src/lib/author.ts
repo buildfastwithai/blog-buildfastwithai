@@ -34,5 +34,7 @@ const AUTHORS: Record<string, Author> = {
 
 export function getAuthorBySlug(slug: string): Author | null {
   const normalized = slug.toLowerCase().trim();
-  return AUTHORS[normalized] || PRIMARY_AUTHOR;
+  // Unknown slugs must 404, not silently render the primary author: every
+  // typo would otherwise be a 200 duplicate of the real author page.
+  return AUTHORS[normalized] ?? null;
 }

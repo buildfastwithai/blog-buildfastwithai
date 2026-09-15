@@ -1,5 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
+import { submitToIndexNow } from "@/lib/indexnow";
+import { blogUrl } from "@/lib/urls";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +36,17 @@ function revalidateBlog(slugs: string[]) {
   // Discovery surfaces.
   revalidatePath("/sitemap.xml");
   revalidatePath("/feed.xml");
+  revalidatePath("/llms.txt");
+  revalidatePath("/llms-full.txt");
+}
+
+/**
+ * After the cache is purged, tell IndexNow-enabled engines which article URLs
+ * changed so they recrawl now rather than on their own schedule. Best effort:
+ * a failure here never fails the revalidation itself.
+ */
+async function notifySearchEngines(slugs: string[]) {
+  return submitToIndexNow(slugs.map((slug) => blogUrl(`/${slug}`)));
 }
 
 function authorize(request: NextRequest): boolean {
@@ -62,8 +75,10 @@ export async function GET(request: NextRequest) {
   const previousSlug = request.nextUrl.searchParams.get("previousSlug");
   const slugs = [slug, previousSlug].filter((s): s is string => !!s);
   revalidateBlog(slugs);
+  // Only the live slug is worth announcing; a renamed-away slug now 404s.
+  const indexNow = await notifySearchEngines([slug]);
 
-  return NextResponse.json({ ok: true, revalidated: slugs });
+  return NextResponse.json({ ok: true, revalidated: slugs, indexNow });
 }
 
 /** Scriptable: for a cron job or CI sweeper. */
@@ -85,5 +100,6 @@ export async function POST(request: NextRequest) {
   }
 
   revalidateBlog(slugs);
-  return NextResponse.json({ ok: true, revalidated: slugs });
+  const indexNow = await notifySearchEngines(slugs);
+  return NextResponse.json({ ok: true, revalidated: slugs, indexNow });
 }

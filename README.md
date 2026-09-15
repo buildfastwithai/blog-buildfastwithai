@@ -53,6 +53,10 @@ See [`.env.example`](.env.example). Notable:
   production until you are ready for the new domain to be indexed.
 - `REVALIDATE_SECRET` — for `/api/revalidate/blog?slug=<slug>&secret=…`, which
   purges the ISR cache after publishing/editing a post.
+- `INDEXNOW_KEY` — optional. When set, `/api/revalidate/blog` also submits the
+  changed article URLs to IndexNow (Bing, Yandex, Naver, Seznam) and the key is
+  served at `/indexnow-key.txt` for verification. Any 8-128 character
+  `[a-zA-Z0-9-]` string works.
 - `LUMA_API_KEY` — the "next workshop" card in the article sidebar. Optional;
   the card falls back to a link to the workshops page.
 
@@ -65,6 +69,7 @@ See [`.env.example`](.env.example). Notable:
 | `/all`, `/all/page/[page]`         | ISR, 1h                              |
 | `/[slug]/page/[page]`              | Collection pagination; ISR 24h       |
 | `/sitemap.xml`, `/feed.xml`        | 24h / 1h                             |
+| `/llms.txt`, `/llms-full.txt`      | ISR, 1h (LLM discovery / full feed)  |
 | `/api/blogs/list`                  | CDN-cached search/filter for `/all`  |
 | `/api/blogs/subscribe`             | Newsletter signup (rate-limited)     |
 | `/api/events`                      | Luma calendar proxy (6h cache)       |
@@ -187,6 +192,7 @@ Every stage is an isolated set of AWS resources; production resources are
    | `RESEND_API_KEY`                       |                                         |
    | `LUMA_API_KEY`                         |                                         |
    | `REVALIDATE_SECRET`                    |                                         |
+   | `INDEXNOW_KEY`                         | optional, enables IndexNow pings        |
 
    Variables (optional): `AWS_REGION` (default `ap-south-1`; pick the region
    nearest the Supabase project), `NEXT_PUBLIC_SITE_URL`,

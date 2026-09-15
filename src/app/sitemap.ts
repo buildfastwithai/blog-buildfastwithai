@@ -90,6 +90,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ];
     }) ?? [];
 
+  // Profile page only. Its pagination is noindex: with one author it is the
+  // same list as /all/page/N, which is already listed below.
   const authorPages = [
     {
       url: `${BLOG_SITE_URL}/author/satvik-paramkusam`,
@@ -97,15 +99,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.8,
     },
-    ...Array.from(
-      { length: Math.max(0, totalArchivePages - 1) },
-      (_, i) => ({
-        url: `${BLOG_SITE_URL}/author/satvik-paramkusam/page/${i + 2}`,
-        lastModified: new Date(),
-        changeFrequency: "weekly" as const,
-        priority: 0.5,
-      }),
-    ),
   ];
 
   return [

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
+import { normalizeLegacyBlogHref } from "@/lib/urls";
 
 // Lazy load heavy interactive components
 const QuizContainer = dynamic(() => import("../quiz-container"), {
@@ -168,11 +169,17 @@ export function BlogContent({ content, blogTitle, onHeadingsChange, onActiveCtas
         }
         return `<img${newAttrs}>`;
       })
-      // Add rel="noopener noreferrer" & target="_blank" to external <a> links
+      // Point legacy www.buildfastwithai.com/blogs/... links at this host, then
+      // add rel="noopener noreferrer" & target="_blank" to external <a> links.
       .replace(/<a\b([^>]*)>/gi, (match, attrs) => {
         const hrefMatch = attrs.match(/href\s*=\s*["']([^"']+)["']/i);
         if (hrefMatch) {
-          const href = hrefMatch[1];
+          const originalHref = hrefMatch[1];
+          const href = normalizeLegacyBlogHref(originalHref);
+          if (href !== originalHref) {
+            attrs = attrs.replace(hrefMatch[0], hrefMatch[0].replace(originalHref, href));
+            match = `<a${attrs}>`;
+          }
           const isExternal = href.startsWith("http://") || href.startsWith("https://");
           const isInternal = href.includes("buildfastwithai.com") || href.startsWith("/");
 
