@@ -6,6 +6,7 @@ import { BlogContent } from "./blog-content";
 import { ShareButtons } from "./share-buttons";
 import { TableOfContents } from "./table-of-contents";
 import { BlogRightSidebar } from "./blog-right-sidebar";
+import { HackathonLeftCta } from "./hackathon-left-cta";
 import { GooglePreferredSourceBtn } from "../google-preferred-source-btn";
 import Image from "next/image";
 import dynamic from "next/dynamic";
@@ -114,16 +115,16 @@ export function BlogLayout({ blog, relatedBlogs }: BlogLayoutProps) {
       {/* Reading column — max-w-2xl ≈ 68ch optimal prose width */}
       <div className="relative mx-auto max-w-2xl px-4 sm:px-6 lg:px-0 py-10 lg:py-14">
         
-        {/* ── Left Sidebar: Floating TOC (XL+) ────────────────────────── */}
-        {tocItems.length > 0 && (
+        {/* ── Left Sidebar: Floating TOC + Hackathon CTA (XL+) ─────────── */}
+        <div className={cn(
+          "hidden xl:block absolute -left-[340px] top-14 h-full pointer-events-none transition-all duration-700 ease-out",
+          pillVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+        )}>
           <div className={cn(
-            "hidden xl:block absolute -left-[340px] top-14 h-full pointer-events-none transition-all duration-700 ease-out",
-            pillVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+            "sticky top-24 w-[300px] flex flex-col h-[calc(100vh-8rem)]",
+            pillVisible ? "pointer-events-auto" : "pointer-events-none"
           )}>
-            <div className={cn(
-              "sticky top-24 w-[300px]",
-              pillVisible ? "pointer-events-auto" : "pointer-events-none"
-            )}>
+            {tocItems.length > 0 && (
               <div className={cn(
                 "overflow-hidden transition-all duration-500",
                 tocOpen ? "max-h-[80vh]" : "max-h-[52px]"
@@ -155,9 +156,22 @@ export function BlogLayout({ blog, relatedBlogs }: BlogLayoutProps) {
                   <TableOfContents items={tocItems} />
                 </div>
               </div>
+            )}
+
+            {/* Temporary hardcoded promo — pinned to the bottom of the column, hidden while the TOC is expanded */}
+            <div
+              aria-hidden={tocOpen}
+              className={cn(
+                "mt-auto w-[280px] shrink-0 transition-all duration-500 ease-out",
+                tocOpen
+                  ? "pointer-events-none translate-y-3 opacity-0"
+                  : "translate-y-0 opacity-100"
+              )}
+            >
+              <HackathonLeftCta />
             </div>
           </div>
-        )}
+        </div>
 
         {/* ── Right Sidebar: Floating CTAs (XL+) ──────────────────────── */}
         <BlogRightSidebar isVisible={pillVisible} activeCtas={activeCtas} />
