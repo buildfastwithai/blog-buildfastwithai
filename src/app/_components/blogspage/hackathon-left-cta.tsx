@@ -5,7 +5,7 @@ import { usePostHog } from "posthog-js/react";
 
 // Temporary hardcoded promo (AI Build Challenge 2026). Remove once the hackathon closes.
 const UNSTOP_URL =
-  "https://unstop.com/hackathons/build-fast-with-ai-ai-build-challenge-2026-build-fast-with-ai-1758453?lb=usesFhWX";
+  "https://unstop.com/hackathons/build-fast-with-ai-ai-build-challenge-2026-build-fast-with-ai-1758453?ref=ctaqXtYX";
 const DETAILS_URL =
   "https://www.buildfastwithai.com/hackathon?utm_source=blog_sidebar&utm_medium=sidebar&utm_campaign=ai_build_challenge_2026";
 
