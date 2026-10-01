@@ -233,3 +233,4 @@ goes through OpenNext's revalidation queue and updates the ISR cache in S3;
 CloudFront honours the resulting cache headers. There is no need to invalidate
 CloudFront by hand after publishing a post.
 
+Deploy
