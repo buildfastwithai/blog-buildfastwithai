@@ -29,7 +29,8 @@ then a curated collection. Keep collection slugs distinct from article slugs.
   `blogs_category`, `blogs_curated`, `blogs_subscriber`, `blogs_comments`,
   `users`, `login_tracking`, …). Same auth users: an account created on the
   main site signs in here with the same credentials.
-- PostHog + GA + GTM + Meta Pixel with the same IDs as the main site.
+- PostHog + GTM + Meta Pixel with the same IDs as the main site; GA4 uses a
+  separate blog-only property (`G-VH8TYZZVCJ`).
 
 ## Local development
 

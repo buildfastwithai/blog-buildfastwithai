@@ -40,9 +40,10 @@ const libreBaskerville = Libre_Baskerville({
   variable: "--font-serif",
 });
 
-// Same IDs as the main site so analytics stay in one property.
+// GTM and Meta Pixel are shared with the main site. GA4 has its own
+// blog-only property (the main site keeps G-PYH3FFFZWL).
 const GTM_ID = "GTM-KCM84S7V";
-const GA_ID = "G-PYH3FFFZWL";
+const GA_ID = "G-VH8TYZZVCJ";
 const META_PIXEL_IDS = ["1210269183379764", "668882032580699"];
 
 // Set NEXT_PUBLIC_NOINDEX=true on preview/staging deployments so crawlers never
