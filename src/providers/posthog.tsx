@@ -16,6 +16,10 @@ function CSPostHogProvider({ children }: { children: React.ReactNode }) {
         // blockers from blocking the session-replay recorder script, which
         // was the cause of "[SessionRecording] could not load recorder".
         api_host: "/ingest",
+        // Send plain JSON. The CloudFront/OpenNext Lambda rewrite corrupts
+        // gzipped POST bodies, and PostHog answers 400 "invalid GZIP data".
+        disable_compression: true,
+        disable_session_recording: true,
         // ui_host must point at PostHog's real domain so the toolbar works.
         ui_host: "https://us.posthog.com",
         person_profiles: "always",
