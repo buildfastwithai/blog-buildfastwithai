@@ -7,8 +7,10 @@ import { useEffect } from "react";
 function CSPostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Initialize PostHog after component mounts (lazy load)
+    const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+    if (!key) return; // e.g. preview stages / local dev without a key
     if (typeof window !== "undefined" && !posthog.__loaded) {
-      posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+      posthog.init(key, {
         // Route ingestion + assets (recorder.js, array.js) through our own
         // domain via the Next.js rewrites in next.config.ts. This stops ad
         // blockers from blocking the session-replay recorder script, which

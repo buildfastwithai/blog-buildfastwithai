@@ -96,7 +96,11 @@ export default $config({
         NEXT_PUBLIC_NOINDEX: isProduction
           ? (optional("NEXT_PUBLIC_NOINDEX") ?? "false")
           : "true",
-        NEXT_PUBLIC_POSTHOG_KEY: optional("NEXT_PUBLIC_POSTHOG_KEY"),
+        // Required in production so a missing secret fails the deploy instead
+        // of silently shipping a site that tracks nothing.
+        NEXT_PUBLIC_POSTHOG_KEY: isProduction
+          ? required("NEXT_PUBLIC_POSTHOG_KEY")
+          : optional("NEXT_PUBLIC_POSTHOG_KEY"),
         // Server-only.
         SUPABASE_SECRET_KEY: optional("SUPABASE_SECRET_KEY"),
         BLOG_SLACK_WEBHOOK_URL: optional("BLOG_SLACK_WEBHOOK_URL"),
