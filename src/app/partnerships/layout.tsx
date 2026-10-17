@@ -41,6 +41,10 @@ export default function PartnershipsLayout({
               All blogs
             </Link>
             &nbsp;&middot;&nbsp;
+            <Link className="link" href="/partnerships/guidelines">
+              Guidelines
+            </Link>
+            &nbsp;&middot;&nbsp;
             <Link className="link" href="/partnerships/terms">
               Terms
             </Link>

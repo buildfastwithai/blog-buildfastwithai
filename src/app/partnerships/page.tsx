@@ -73,20 +73,29 @@ export default function PartnershipsPage() {
       <div className="hero-screen">
         <section className="hero">
           <div className="wrap">
-            <span className="kicker in">Partnership Services &middot; Write for us</span>
+            <span className="kicker in">
+              <span className="k-full">Partnership Services &middot; Write for us</span>
+              <span className="k-short">Write for us &middot; Guest posts &middot; SEO</span>
+            </span>
             <Split as="h1">
               Put your product in front of builders who <em className="hl">actually ship.</em>
             </Split>
             <div className="hero-bottom">
               <p className="lead">
-                Sponsored articles, guest posts, contextual mentions, tool reviews and SEO content on the Build Fast with AI blog. Edited to our standard, so it reads like journalism, not an ad.
+                <span className="lead-full">
+                  Sponsored articles, guest posts, contextual mentions, tool reviews and SEO content on the Build Fast with AI blog. Edited to our standard, so it reads like journalism, not an ad.
+                </span>
+                <span className="lead-short">
+                  Guest posts, sponsored articles, reviews and SEO on the Build Fast with AI blog.
+                </span>
               </p>
               <div className="hero-ctas">
                 <a className="btn btn-solid" href="#contact">
                   Send your request <span className="arr">&rarr;</span>
                 </a>
                 <Link className="btn btn-line" href="/partnerships/guidelines">
-                  Read the guidelines
+                  <span className="lbl-full">Read the guidelines</span>
+                  <span className="lbl-short">Guidelines</span>
                 </Link>
               </div>
             </div>
@@ -315,9 +324,22 @@ export default function PartnershipsPage() {
             <div className="step"><div className="dot">5</div><h4>Payment</h4><p>The invoice is cleared before the article goes live.</p></div>
             <div className="step"><div className="dot">6</div><h4>Publish</h4><p>You get the live URL, plus social posts if included.</p></div>
           </div>
-          <p className="source rv d2">
-            <Link className="link" href="/partnerships/guidelines">Article guidelines</Link> &middot; <Link className="link" href="/partnerships/terms">Terms</Link>
-          </p>
+          <div className="doc-links rv d2">
+            <Link className="doc-card" href="/partnerships/guidelines">
+              <span>
+                <b>Article guidelines</b>
+                <small>Topics, format, links and images</small>
+              </span>
+              <i aria-hidden="true">&rarr;</i>
+            </Link>
+            <Link className="doc-card" href="/partnerships/terms">
+              <span>
+                <b>Terms &amp; conditions</b>
+                <small>Payment, refunds and content rights</small>
+              </span>
+              <i aria-hidden="true">&rarr;</i>
+            </Link>
+          </div>
         </div>
       </section>
 

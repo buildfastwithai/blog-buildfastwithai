@@ -39,12 +39,19 @@ const ITEMS: Item[] = [
     fit: ["In-blog CTA", "X promotion"],
     place: (
       <div className="p-cta">
-        <span className="p-logo" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className="p-logo"
+          src="https://www.google.com/s2/favicons?domain=buildfastwithai.com&sz=128"
+          alt="Build Fast with AI logo"
+          width={42}
+          height={42}
+        />
         <div>
-          <b>Try Nimbus AI free</b>
-          <small>Ship AI features in minutes, not weeks</small>
+          <b>Join FDE</b>
+          <small>Forward Deployed Crash Course</small>
         </div>
-        <span className="p-btn">Start free &rarr;</span>
+        <span className="p-btn">Join now &rarr;</span>
       </div>
     ),
   },

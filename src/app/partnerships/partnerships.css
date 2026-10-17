@@ -836,3 +836,249 @@
 .pp .svc-track .m-bars{margin-top:14px}
 .pp .svc-track .m-bars div{grid-template-columns:96px 1fr}
 .pp .svc-track .m-pc{margin-top:14px;padding-top:12px}
+
+/* =====================================================================
+   Responsive pass: re-asserts the mobile/tablet rules that later desktop
+   overrides above would otherwise win over. Keep this block last.
+   ===================================================================== */
+
+/* ---- small laptops: navbar needs less room ---- */
+@media (max-width:1180px){
+  .pp header .nav{gap:16px}
+  .pp .nav-links{gap:20px}
+  .pp .nav-links a:not(.btn){font-size:13.5px}
+  .pp .nav-links .btn{padding:10px 16px;font-size:13px}
+  .pp .pp-brand .logo{font-size:20px}
+}
+
+/* ---- tablet and below ---- */
+@media (max-width:1020px){
+  .pp .hero-screen .hero{padding:48px 0}
+  .pp .hero-screen .marquee{margin-top:0}
+
+  /* stats: two columns, no stray left padding on the first of each row */
+  .pp .stat{padding:22px 20px 20px 0}
+  .pp .stat:nth-child(odd){padding-left:0}
+  .pp .stat:nth-child(even){padding-left:24px;border-right:0}
+  .pp .stat:nth-child(even)::before{left:24px}
+  .pp .stat:nth-child(odd)::before{left:0}
+
+  /* live preview: tabs become a scrolling row of pills */
+  .pp .lp-tabs{display:flex;overflow-x:auto;border-top:0;gap:8px;padding-bottom:4px;scrollbar-width:none}
+  .pp .lp-tabs::-webkit-scrollbar{display:none}
+  .pp .lp-tab{flex:none;width:auto;grid-template-columns:auto;padding:10px 16px;border:1px solid var(--line);border-radius:999px}
+  .pp .lp-tab .t-n,.pp .lp-tab .t-h{display:none}
+  .pp .lp-tab.on{background:var(--tc);border-color:var(--tc)}
+  .pp .lp-tab.on b{color:#fff}
+  .pp .lp-tab .t-bar{left:16px;right:16px;bottom:4px;background:#fff}
+
+  .pp .seo{padding:36px 28px}
+  .pp #process{padding:64px 0}
+  .pp .steps{grid-template-columns:repeat(3,1fr);row-gap:32px}
+  .pp .steps::before,.pp .steps .bar{display:none}
+}
+
+/* ---- phones ---- */
+@media (max-width:640px){
+  .pp section{padding:48px 0}
+  .pp #process{padding:48px 0}
+  .pp .head .num{font-size:clamp(38px,12vw,52px)}
+  .pp .head h2,.pp #content .head h2{font-size:16px}
+
+  /* hero */
+  .pp .hero-screen .hero{padding:36px 0 32px}
+  .pp .hero h1{margin-top:16px}
+  .pp .hero-bottom{gap:22px;margin-top:26px}
+  .pp .hero .lead{font-size:16.5px}
+  .pp .hero-ctas .btn{flex:1 1 100%;justify-content:center}
+  .pp .marquee{padding:12px 0}
+  .pp .track{font-size:20px}
+  .pp .track span{margin-right:36px}
+  .pp .track span::after{margin-left:36px}
+
+  /* stats: one column */
+  .pp .stats,.pp .stats-2{grid-template-columns:1fr}
+  .pp .stat,.pp .stat:nth-child(odd),.pp .stat:nth-child(even){padding:20px 0;border-right:0}
+  .pp .stat + .stat{border-top:1px solid var(--line)}
+  .pp .stat::before,.pp .stat:nth-child(even)::before,.pp .stat:nth-child(odd)::before{left:0}
+  .pp .stat b{font-size:clamp(44px,14vw,60px)}
+  .pp .mini,.pp .mini + .mini{padding:14px 0;border-right:0}
+  .pp .mini + .mini{border-top:1px solid var(--line)}
+
+  /* live preview */
+  .pp .lp{gap:16px}
+  .pp .lp-stage{padding:12px}
+  .pp .lp-body{padding:16px 16px 18px}
+  .pp .lp-foot{grid-template-columns:1fr;gap:14px}
+  .pp .lp-count{display:none}
+  .pp .p-cta,.pp .p-banner{flex-wrap:wrap}
+  .pp .p-bars span{grid-template-columns:90px 1fr}
+
+  /* services carousel */
+  .pp .svc-track{gap:12px}
+  .pp .svc-track>.zz,.pp .svc-track>.zz:nth-child(even){flex-basis:90%;padding:16px;border-radius:16px;gap:16px}
+  .pp .svc-track>.zz .zz-vis{min-height:190px;padding:12px}
+  .pp .svc-track>.zz .mock{max-width:100%}
+  .pp .svc-track>.zz .zz-txt h3{font-size:26px}
+  .pp .svc-track>.zz .zz-tag{font-size:10px;padding:4px 9px}
+  .pp .svc-track>.zz .btn{width:100%;justify-content:center}
+  .pp .seo{padding:26px 18px}
+  .pp .seo h3{font-size:28px}
+
+  /* process */
+  .pp .steps{grid-template-columns:1fr 1fr;row-gap:26px}
+  .pp .step{padding-right:10px}
+  .pp .step .dot{width:46px;height:46px;font-size:20px}
+  .pp .step h4{margin-top:14px}
+
+  /* contact + form */
+  .pp .contact{gap:24px}
+  .pp .contact-side h3{font-size:34px}
+  .pp .contact-side .mail{font-size:20px;word-break:break-word}
+  .pp form{padding:20px 16px}
+  .pp .row{grid-template-columns:1fr;gap:0}
+  .pp .form-foot .btn{width:100%;justify-content:center}
+
+  /* faq */
+  .pp summary{font-size:19px;padding:16px 0;gap:14px}
+  .pp details p{padding-right:0}
+
+  /* guidelines + terms */
+  .pp .yn{grid-template-columns:1fr;gap:24px}
+  .pp .blk{padding-bottom:28px;margin-bottom:28px}
+  .pp .blk h3{font-size:28px}
+  .pp .tpl{font-size:11.5px;padding:16px}
+  .pp .subbar .wrap{height:48px}
+  .pp .closing{padding:64px 0}
+  .pp .closing h2{font-size:clamp(38px,11vw,56px)}
+  .pp footer .wrap{flex-direction:column;align-items:flex-start}
+}
+
+/* ---- very small phones ---- */
+@media (max-width:380px){
+  .pp .pp-brand .logo{display:none}
+  .pp .pp-logo-img{border-right:0;padding-right:0}
+  .pp .pp-mobile .btn{padding:9px 14px}
+  .pp .steps{grid-template-columns:1fr}
+  .pp .hero h1{font-size:40px}
+}
+
+/* hero copy: full text on larger screens, a short line on phones */
+.pp .hero .lead-short{display:none}
+@media (max-width:640px){
+  .pp .hero .lead-full{display:none}
+  .pp .hero .lead-short{display:inline}
+}
+
+/* hero on phones only: pill tag, one row of buttons, no scrolling tags */
+.pp .hero .k-short,.pp .hero .lbl-short{display:none}
+@media (max-width:640px){
+  .pp .hero-screen .marquee{display:none}
+
+  .pp .hero .kicker{display:inline-block;padding:8px 14px;border-radius:999px;background:var(--blue-soft);font-size:12.5px;letter-spacing:.1em;line-height:1.3}
+  .pp .hero .kicker::before{display:none}
+  .pp .hero .k-full{display:none}
+  .pp .hero .k-short{display:inline}
+
+  .pp .hero .hero-ctas{flex-wrap:nowrap;gap:10px}
+  .pp .hero .hero-ctas .btn{flex:1 1 0;min-width:0;padding:15px 12px;font-size:14px;justify-content:center;white-space:nowrap}
+  .pp .hero .hero-ctas .btn-solid{flex:1.5 1 0}
+  .pp .hero .lbl-full{display:none}
+  .pp .hero .lbl-short{display:inline}
+}
+
+/* Reach stats on phones: 2x2 grid and a compact 3-up row instead of one tall column */
+@media (max-width:640px){
+  .pp .stats{grid-template-columns:1fr 1fr}
+  .pp .stat,.pp .stat:nth-child(odd){padding:18px 12px 16px 0;border-right:1px solid var(--line);border-top:0}
+  .pp .stat:nth-child(even){padding:18px 0 16px 16px;border-right:0}
+  .pp .stat:nth-child(n+3){border-top:1px solid var(--line)}
+  .pp .stat::before{left:0;width:40px}
+  .pp .stat:nth-child(even)::before{left:16px}
+  .pp .stat b{font-size:clamp(36px,11vw,46px)}
+  .pp .stat > span{font-size:13px;margin-top:6px}
+  .pp .stat small{font-size:10px;margin-top:4px}
+
+  .pp .stats-2{grid-template-columns:repeat(3,1fr)}
+  .pp .mini,.pp .mini + .mini{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:4px;padding:14px 8px 14px 0;border-right:1px solid var(--line);border-top:0}
+  .pp .mini + .mini{padding-left:12px}
+  .pp .mini:last-child{border-right:0}
+  .pp .mini > span{font-size:11.5px;line-height:1.3}
+  .pp .mini b{font-size:24px}
+  .pp .source{font-size:10.5px;line-height:1.5}
+}
+
+/* hero on phones: fills the first screen, larger type, next section stays below the fold */
+@media (max-width:640px){
+  .pp .hero-screen{min-height:calc(100svh - 77px)}
+  .pp .hero-screen .hero{padding:32px 0 40px}
+  .pp .hero .kicker{font-size:13px;padding:9px 16px}
+  .pp .hero h1{font-size:clamp(44px,13vw,60px);margin-top:24px;line-height:1.04}
+  .pp .hero-bottom{margin-top:32px;gap:28px}
+  .pp .hero .lead{font-size:18px;line-height:1.55}
+  .pp .hero .hero-ctas .btn{padding:17px 14px;font-size:15px}
+}
+
+/* hero on phones: full-screen poster layout (tag top, big headline middle, copy + buttons bottom) */
+@media (max-width:640px){
+  .pp .hero-screen{
+    min-height:calc(100svh - 77px);
+    background:
+      radial-gradient(90% 55% at 100% 0%, rgba(34,97,146,.20), transparent 62%),
+      radial-gradient(80% 45% at 0% 100%, rgba(160,106,31,.18), transparent 62%),
+      linear-gradient(rgba(20,28,40,.045) 1px, transparent 1px) 0 0/100% 44px,
+      var(--ivory);
+  }
+  .pp .hero-screen .hero{flex:1;display:flex;padding:24px 0 28px;background:none}
+  .pp .hero-screen .hero .wrap{flex:1;display:flex;flex-direction:column;width:100%}
+  .pp .hero .kicker{align-self:flex-start;font-size:13px;padding:9px 16px;background:#fff;box-shadow:0 8px 24px -14px rgba(20,28,40,.45)}
+  .pp .hero h1{
+    margin:auto 0;
+    padding:28px 0;
+    font-size:clamp(52px,15.5vw,72px);
+    line-height:1;
+    letter-spacing:-.025em;
+    max-width:none;
+  }
+  .pp .hero h1 .hl{background-image:linear-gradient(transparent 58%,rgba(160,106,31,.32) 58%,rgba(160,106,31,.32) 92%,transparent 92%)}
+  .pp .hero-bottom{margin-top:0;gap:22px;padding-top:22px;border-top:1px solid var(--line)}
+  .pp .hero .lead{font-size:17.5px;line-height:1.5;max-width:none}
+}
+
+/* navbar: solid background, no see-through */
+.pp header{background:var(--ivory);backdrop-filter:none;-webkit-backdrop-filter:none;border-bottom:1px solid var(--line)}
+
+/* process on phones: compact vertical timeline (circle left, text right, joined by a line) */
+@media (max-width:640px){
+  .pp .steps,.pp .steps{grid-template-columns:1fr;row-gap:0;margin-top:4px}
+  .pp .step{display:grid;grid-template-columns:46px 1fr;column-gap:16px;align-items:start;padding:0 0 24px;position:relative}
+  .pp .step .dot{grid-row:1 / span 2;width:46px;height:46px;font-size:20px}
+  .pp .step h4{margin:3px 0 0;font-size:16px;line-height:1.3}
+  .pp .step p{margin:4px 0 0;font-size:14px;line-height:1.5}
+  .pp .step:not(:last-child)::after{content:"";position:absolute;left:22px;top:46px;bottom:0;width:1px;background:var(--blue);opacity:.5}
+  .pp #process .source{margin-top:12px}
+}
+
+/* links to the guidelines and terms pages, visible on every screen size */
+.pp .doc-links{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:48px}
+.pp .doc-card{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);text-decoration:none;transition:border-color .3s,transform .4s var(--ease),box-shadow .4s var(--ease)}
+.pp .doc-card b{display:block;font-size:16px;font-weight:600}
+.pp .doc-card small{display:block;margin-top:4px;font-size:13.5px;color:var(--ink-2)}
+.pp .doc-card i{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--blue);color:#fff;font-style:normal;font-size:17px;transition:transform .4s var(--ease)}
+.pp .doc-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 18px 36px -24px rgba(20,28,40,.4)}
+.pp .doc-card:hover i{transform:translateX(3px)}
+@media (max-width:640px){
+  .pp .doc-links{grid-template-columns:1fr;gap:12px;margin-top:28px}
+  .pp .doc-card{padding:16px 18px}
+}
+
+/* in-blog CTA example in the content preview: real logo, tidy on phones */
+.pp .p-logo{width:42px;height:42px;padding:6px;border-radius:10px;background:#fff;object-fit:contain;border:1px solid rgba(20,28,40,.1);box-shadow:0 6px 16px -10px rgba(20,28,40,.4)}
+.pp .p-cta b{line-height:1.3}
+@media (max-width:640px){
+  .pp .lp-place{margin-top:30px}
+  .pp .p-cta{display:grid;grid-template-columns:42px minmax(0,1fr);gap:10px 12px;align-items:center;padding:14px}
+  .pp .p-cta b{font-size:14px}
+  .pp .p-cta small{display:block;margin-top:2px;font-size:12px}
+  .pp .p-cta .p-btn{grid-column:1 / -1;text-align:center;padding:11px 14px;font-size:13px}
+}
