@@ -190,7 +190,7 @@ Every stage is an isolated set of AWS resources; production resources are
    | `NEXT_PUBLIC_SUPABASE_URL`             | required                                |
    | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | required (also used by CI's build)      |
    | `SUPABASE_SECRET_KEY`                  |                                         |
-   | `NEXT_PUBLIC_POSTHOG_KEY`              |                                         |
+   | `NEXT_PUBLIC_POSTHOG_KEY`              | required for production deploys         |
    | `BLOG_SLACK_WEBHOOK_URL` / `SLACK_WEBHOOK_URL` |                                 |
    | `RESEND_API_KEY`                       |                                         |
    | `LUMA_API_KEY`                         |                                         |

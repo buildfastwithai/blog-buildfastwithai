@@ -7,13 +7,19 @@ import { useEffect } from "react";
 function CSPostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Initialize PostHog after component mounts (lazy load)
+    const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+    if (!key) return; // e.g. preview stages / local dev without a key
     if (typeof window !== "undefined" && !posthog.__loaded) {
-      posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+      posthog.init(key, {
         // Route ingestion + assets (recorder.js, array.js) through our own
         // domain via the Next.js rewrites in next.config.ts. This stops ad
         // blockers from blocking the session-replay recorder script, which
         // was the cause of "[SessionRecording] could not load recorder".
         api_host: "/ingest",
+        // Send plain JSON. The CloudFront/OpenNext Lambda rewrite corrupts
+        // gzipped POST bodies, and PostHog answers 400 "invalid GZIP data".
+        disable_compression: true,
+        disable_session_recording: true,
         // ui_host must point at PostHog's real domain so the toolbar works.
         ui_host: "https://us.posthog.com",
         person_profiles: "always",
