@@ -38,6 +38,9 @@ export default function NavbarBlog() {
     setMobileOpen(false);
   };
 
+  // /partnerships ships its own navbar (see app/partnerships/_components).
+  if (pathname?.startsWith("/partnerships")) return null;
+
   return (
     <>
       <header

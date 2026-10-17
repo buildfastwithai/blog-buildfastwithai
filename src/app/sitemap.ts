@@ -101,6 +101,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
+  const partnershipPages = [
+    { path: "/partnerships", priority: 0.6 },
+    { path: "/partnerships/guidelines", priority: 0.4 },
+    { path: "/partnerships/terms", priority: 0.3 },
+  ].map(({ path, priority }) => ({
+    url: `${BLOG_SITE_URL}${path}`,
+    lastModified: new Date("2026-10-15"),
+    changeFrequency: "monthly" as const,
+    priority,
+  }));
+
   return [
     {
       url: BLOG_SITE_URL,
@@ -115,6 +126,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     ...authorPages,
+    ...partnershipPages,
     ...blogList,
     ...archivePages,
     ...collectionList,
