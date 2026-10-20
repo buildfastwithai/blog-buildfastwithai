@@ -12,7 +12,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/", "/_next/"],
+      // /_next/ must stay crawlable: Googlebot needs its CSS/JS to render pages
+      // and /_next/image to fetch the article images.
+      disallow: ["/api/"],
     },
     sitemap: [`${BLOG_SITE_URL}/sitemap.xml`, `${BLOG_SITE_URL}/feed.xml`],
   };

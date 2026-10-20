@@ -45,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
       return {
         url: `${BLOG_SITE_URL}/${item.slug}`,
-        lastModified: item.created_at ? new Date(item.created_at) : new Date(),
+        lastModified: item.created_at ? new Date(item.created_at) : undefined,
         changeFrequency: "weekly" as const,
         priority: calculateBlogPriority(
           item.created_at || new Date().toISOString(),
@@ -55,12 +55,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     }) ?? [];
 
+  // The blogs table has no updated_at column, so created_at is the best "last
+  // changed" signal. Listing pages change when a new post is published, so they
+  // use the newest post's date. A lastmod of "now" on every build teaches Google
+  // to ignore the field. Pages with no reliable date omit lastModified.
+  const latestPostDate = (blogs ?? []).reduce<Date | undefined>((latest, item) => {
+    if (!item.created_at) return latest;
+    const date = new Date(item.created_at);
+    return !latest || date > latest ? date : latest;
+  }, undefined);
+
   const totalArchivePages = Math.ceil((blogs?.length ?? 0) / BLOGS_PAGE_SIZE);
   const archivePages = Array.from(
     { length: Math.max(0, totalArchivePages - 1) },
     (_, i) => ({
       url: `${BLOG_SITE_URL}/all/page/${i + 2}`,
-      lastModified: new Date(),
       changeFrequency: "weekly" as const,
       priority: 0.5,
     }),
@@ -75,7 +84,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       return [
         {
           url: base,
-          lastModified: new Date(),
           changeFrequency: "weekly" as const,
           priority: 0.7,
         },
@@ -83,7 +91,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         // first page of a collection.
         ...Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => ({
           url: `${base}/page/${i + 2}`,
-          lastModified: new Date(),
           changeFrequency: "weekly" as const,
           priority: 0.5,
         })),
@@ -95,7 +102,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const authorPages = [
     {
       url: `${BLOG_SITE_URL}/author/satvik-paramkusam`,
-      lastModified: new Date(),
+      lastModified: latestPostDate,
       changeFrequency: "weekly" as const,
       priority: 0.8,
     },
@@ -115,13 +122,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     {
       url: BLOG_SITE_URL,
-      lastModified: new Date(),
+      lastModified: latestPostDate,
       changeFrequency: "daily",
       priority: 1,
     },
     {
       url: `${BLOG_SITE_URL}/all`,
-      lastModified: new Date(),
+      lastModified: latestPostDate,
       changeFrequency: "daily",
       priority: 0.8,
     },
