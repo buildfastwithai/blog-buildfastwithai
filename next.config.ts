@@ -50,6 +50,17 @@ const config: NextConfig = {
           { key: "CDN-Cache-Control", value: "no-store" },
         ],
       },
+      {
+        // Review-only article copies (/preview/<slug>). Never cache them at the
+        // CDN and tell every crawler to stay away, in addition to the page's own
+        // noindex meta tag.
+        source: "/preview/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+          { key: "Cache-Control", value: "private, no-cache, no-store, max-age=0, must-revalidate" },
+          { key: "CDN-Cache-Control", value: "no-store" },
+        ],
+      },
     ];
   },
   async redirects() {

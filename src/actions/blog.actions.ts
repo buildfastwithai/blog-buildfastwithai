@@ -62,6 +62,7 @@ export interface Blog extends BlogCardData {
   published: boolean | null;
   views: number | null;
   is_founder_corner: boolean | null;
+  is_preview?: boolean | null;
   extra_image_urls: string[] | null;
   meta_keywords?: string | null;
   author_name?: string | null;
@@ -472,6 +473,44 @@ export const getBlogBySlug = cache(async (slug: string) => {
     categories: blog.categories?.map((cat: any) => cat.category) || [],
   };
 });
+
+/**
+ * A post that is shared for review only: `is_preview = true`, looked up for the
+ * /preview/<slug> route. It is NOT filtered on `published`, so a post stays
+ * viewable there while it is a draft. Every other query in this file still
+ * filters `published = true`, so previews never leak into listings, the
+ * sitemap, the feed or the public /<slug> route.
+ *
+ * Not wrapped in react.cache: the preview page is always dynamic, and a stale
+ * copy would defeat the point of reviewing the latest edits.
+ */
+export async function getPreviewBlogBySlug(slug: string) {
+  const supabase = getStaticSupabaseClient();
+
+  const { data: blog, error } = await supabase
+    .from("blogs")
+    .select(
+      `
+      *,
+      categories:blogs_category_join(
+        category:blogs_category(id, name)
+      )
+    `
+    )
+    .eq("slug", slug)
+    .eq("is_preview", true)
+    .maybeSingle();
+
+  if (error || !blog) {
+    if (error) console.error("Error fetching preview blog by slug:", error);
+    return null;
+  }
+
+  return {
+    ...blog,
+    categories: blog.categories?.map((cat: any) => cat.category) || [],
+  };
+}
 
 /**
  * Slugs to pre-render at build time: the most recent posts, which are the ones
