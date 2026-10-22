@@ -16,6 +16,6 @@ export default function robots(): MetadataRoute.Robots {
       // and /_next/image to fetch the article images.
       disallow: ["/api/"],
     },
-    sitemap: [`${BLOG_SITE_URL}/sitemap.xml`, `${BLOG_SITE_URL}/feed.xml`],
+    sitemap: `${BLOG_SITE_URL}/sitemap.xml`,
   };
 }

@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { MERGED_POSTS } from "./src/lib/merged-posts";
 
 const config: NextConfig = {
   experimental: {
@@ -65,6 +66,20 @@ const config: NextConfig = {
   },
   async redirects() {
     return [
+      // Overlapping posts folded into one keeper each (src/lib/merged-posts.ts).
+      ...Object.entries(MERGED_POSTS).map(([from, to]) => ({
+        source: `/${from}`,
+        destination: `/${to}`,
+        permanent: true,
+      })),
+      // skipTrailingSlashRedirect (needed for PostHog) also stops Next from
+      // redirecting /post/ to /post, so crawlers saw two URLs per page. Redirect
+      // them here, leaving /ingest alone.
+      {
+        source: "/:path((?!ingest).+)/",
+        destination: "/:path",
+        permanent: true,
+      },
       // Anyone who lands here with the old main-site path shape (e.g. a link
       // rewritten by hand to the new host but keeping /blogs/) still gets the
       // article instead of a 404.

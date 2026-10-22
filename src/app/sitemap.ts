@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { BLOGS_PAGE_SIZE } from "@/actions/blog.actions";
+import { MERGED_POSTS } from "@/lib/merged-posts";
 import { BLOG_SITE_URL } from "@/lib/urls";
 import { getStaticSupabaseClient } from "@/utils/supabase/static";
 
@@ -29,7 +30,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     supabase
       .from("blogs")
       .select("slug, image_url, extra_image_urls, created_at, is_founder_corner, published")
-      .eq("published", true),
+      .eq("published", true)
+      // Merged posts redirect to their keeper (src/lib/merged-posts.ts).
+      .not("slug", "in", `(${Object.keys(MERGED_POSTS).join(",")})`),
     supabase
       .from("blogs_curated")
       .select("id, name, slug, blogs:blogs_curated_join(count)"),

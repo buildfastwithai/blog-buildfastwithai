@@ -58,8 +58,13 @@ const GTM_SNIPPET = [
   `})(window,document,'script','dataLayer','${GTM_ID}');`,
 ].join("\n");
 
+// The listing metadata carries a homepage canonical. Every page that should be
+// indexed sets its own, so drop it here: otherwise pages without one (the 404
+// page, for instance) inherit a canonical pointing at the homepage.
+const { alternates: _homeCanonical, ...rootMetadata } = generateBlogListingMetadata();
+
 export const metadata: Metadata = {
-  ...generateBlogListingMetadata(),
+  ...rootMetadata,
   metadataBase: new URL(BLOG_SITE_URL),
   title: {
     default: "Build Fast with AI Blog",

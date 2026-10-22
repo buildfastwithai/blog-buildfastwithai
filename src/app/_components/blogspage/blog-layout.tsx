@@ -6,7 +6,7 @@ import { BlogContent } from "./blog-content";
 import { ShareButtons } from "./share-buttons";
 import { TableOfContents } from "./table-of-contents";
 import { BlogRightSidebar } from "./blog-right-sidebar";
-// import { HackathonLeftCta } from "./hackathon-left-cta"; // AI Build Challenge 2026 promo — paused
+import { LeftSideCta } from "../left-side-cta/left-side-cta";
 import { GooglePreferredSourceBtn } from "../google-preferred-source-btn";
 import Image from "next/image";
 import dynamic from "next/dynamic";
@@ -121,8 +121,8 @@ export function BlogLayout({ blog, relatedBlogs }: BlogLayoutProps) {
           pillVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
         )}>
           <div className={cn(
-            // Add back "flex flex-col h-[calc(100vh-8rem)]" when re-enabling the hackathon CTA below
-            "sticky top-24 w-[300px]",
+            // Column that spans the viewport so the promo below sits at the bottom.
+            "sticky top-24 flex h-[calc(100vh-8rem)] w-[300px] flex-col",
             pillVisible ? "pointer-events-auto" : "pointer-events-none"
           )}>
             {tocItems.length > 0 && (
@@ -159,10 +159,10 @@ export function BlogLayout({ blog, relatedBlogs }: BlogLayoutProps) {
               </div>
             )}
 
-            {/* AI Build Challenge 2026 promo — PAUSED. To re-enable: uncomment this block,
-                uncomment the HackathonLeftCta import at the top, and restore the
-                "flex flex-col h-[calc(100vh-8rem)]" classes on the sticky wrapper above. */}
-            {/* <div
+            {/* Time-boxed CTAs (schedule in left-side-cta/left-cta-schedule.tsx).
+                Renders nothing outside their windows. Fades out while the table
+                of contents is open. */}
+            <div
               aria-hidden={tocOpen}
               className={cn(
                 "mt-auto w-[280px] shrink-0 transition-all duration-500 ease-out",
@@ -171,8 +171,8 @@ export function BlogLayout({ blog, relatedBlogs }: BlogLayoutProps) {
                   : "translate-y-0 opacity-100"
               )}
             >
-              <HackathonLeftCta />
-            </div> */}
+              <LeftSideCta />
+            </div>
           </div>
         </div>
 
