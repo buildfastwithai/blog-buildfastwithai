@@ -20,8 +20,10 @@ function calculateBlogPriority(
   return Math.min(1.0, priority);
 }
 
-// Also revalidated on demand by /api/revalidate/blog.
-export const revalidate = 86400; // 24 hours
+// Also revalidated on demand by /api/revalidate/blog. Posts are published without
+// calling that endpoint, so this timer decides how soon a new post appears in the
+// sitemap; at 24h Google crawled new posts before the sitemap listed them.
+export const revalidate = 3600; // 1 hour, same as the homepage listing
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = getStaticSupabaseClient();

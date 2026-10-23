@@ -16,6 +16,7 @@ import QueryProvider from "@/providers/query-provider";
 import { BlogThemeProvider } from "@/providers/theme-provider";
 import { generateOrganizationSchema } from "@/utils/seo/json-ld";
 import { generateBlogListingMetadata } from "@/utils/seo/metadata";
+import { BlogFooter } from "./_components/blog-footer";
 import NavbarBlog from "./_components/navbar-blog";
 import "./globals.css";
 
@@ -148,6 +149,7 @@ export default function RootLayout({
                   <div className="blogs-theme min-h-screen">
                     <NavbarBlog />
                     {children}
+                    <BlogFooter />
                     <Toaster />
                   </div>
                   {/* Sign-in dialog, opened from the comments section. Portals
