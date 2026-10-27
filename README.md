@@ -1,6 +1,5 @@
 # Build Fast with AI — Blog
 
-deploy ho ja
 
 The blog for [buildfastwithai.com](https://www.buildfastwithai.com), served on
 its own subdomain: **blog.buildfastwithai.com**.
