@@ -15,7 +15,7 @@ import { usePostHog } from "posthog-js/react";
 import { mainSiteUrl } from "@/lib/urls";
 
 // Programs live on the main site; only "All blogs" is served from this domain.
-const AGENTIC_AI_HREF = mainSiteUrl("/agentic-ai");
+const FDE_HREF = mainSiteUrl("/fde?utm_source=blog_navbar&utm_medium=navbar&utm_campaign=fde_program");
 
 const BLOG_NAV_LINKS = [
   { href: mainSiteUrl("/ai-workshops"), label: "AI Workshops", eventName: "blog_navbar_ai_workshops_clicked" },
@@ -72,15 +72,15 @@ export default function NavbarBlog() {
               </Link>
             ))}
             <Link
-              href={AGENTIC_AI_HREF}
+              href={FDE_HREF}
               prefetch={false}
-              onClick={() => handleLinkClick("blog_navbar_agentic_launchpad_clicked", AGENTIC_AI_HREF)}
+              onClick={() => handleLinkClick("blog_navbar_fde_clicked", FDE_HREF)}
               className={cn(
                 buttonVariants({ variant: "default", size: "sm" }),
                 "font-semibold bg-primary text-primary-foreground shadow-sm hover:scale-[0.98] transition-transform"
               )}
             >
-              Agentic AI Launchpad
+              FDE Program
             </Link>
             {signedOut && (
               <div onClick={() => posthog.capture("blog_navbar_theme_toggled")}>
@@ -91,8 +91,8 @@ export default function NavbarBlog() {
             <UserMenu />
           </div>
 
-          {/* Mobile: theme toggle + account + menu button. The Launchpad CTA
-              lives inside the menu on small screens — the bar is too narrow
+          {/* Mobile: theme toggle + account + menu button. The program CTAs
+              live inside the menu on small screens — the bar is too narrow
               for a button, avatar, toggle and hamburger side by side. */}
           <div className="flex items-center gap-2 lg:hidden">
             {signedOut && (

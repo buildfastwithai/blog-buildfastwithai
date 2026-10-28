@@ -106,6 +106,11 @@ export default $config({
         BLOG_SLACK_WEBHOOK_URL: optional("BLOG_SLACK_WEBHOOK_URL"),
         SLACK_WEBHOOK_URL: optional("SLACK_WEBHOOK_URL"),
         RESEND_API_KEY: optional("RESEND_API_KEY"),
+        // Partnerships form: appends each request to a Google Sheet.
+        PARTNERSHIP_SHEET_ID: optional("PARTNERSHIP_SHEET_ID"),
+        GOOGLE_PROJECT_ID: optional("GOOGLE_PROJECT_ID"),
+        GOOGLE_CLIENT_EMAIL: optional("GOOGLE_CLIENT_EMAIL"),
+        GOOGLE_PRIVATE_KEY: optional("GOOGLE_PRIVATE_KEY"),
         LUMA_API_KEY: optional("LUMA_API_KEY"),
         REVALIDATE_SECRET: optional("REVALIDATE_SECRET"),
         INDEXNOW_KEY: optional("INDEXNOW_KEY"),

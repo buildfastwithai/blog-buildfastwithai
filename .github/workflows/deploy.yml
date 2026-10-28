@@ -77,6 +77,11 @@ jobs:
           BLOG_SLACK_WEBHOOK_URL: ${{ secrets.BLOG_SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          # Partnerships form: Google Sheet row per request (service account)
+          PARTNERSHIP_SHEET_ID: ${{ secrets.PARTNERSHIP_SHEET_ID }}
+          GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+          GOOGLE_CLIENT_EMAIL: ${{ secrets.GOOGLE_CLIENT_EMAIL }}
+          GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
           LUMA_API_KEY: ${{ secrets.LUMA_API_KEY }}
           REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
           INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
