@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 import { MERGED_POSTS } from "./src/lib/merged-posts";
 
 const config: NextConfig = {
+  // Next 16.3.0's Turbopack panics ("not a char boundary ... '─'") while it
+  // prints a code frame for a browser warning whose source line holds a
+  // box-drawing character, and `pnpm dev` exits. Don't forward browser logs to
+  // the terminal; they still show in the browser console.
+  logging: { browserToTerminal: false },
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-dialog"],
   },

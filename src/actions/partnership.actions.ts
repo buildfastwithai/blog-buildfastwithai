@@ -6,7 +6,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { appendPartnershipRow } from "@/lib/partnership-sheet";
 
 /** Inboxes that receive every partnership request. */
-const PARTNERSHIP_TO_EMAILS = ["sanjeev@buildfastwithai.com", "aaryan@buildfastwithai.com"];
+const PARTNERSHIP_TO_EMAILS = ["sanjeev@buildfastwithai.com"];
 
 /** Sender address for the notification (domain is verified in Resend). */
 const PARTNERSHIP_FROM = "Build Fast with AI <hello@buildfastwithai.com>";
@@ -64,6 +64,9 @@ export async function submitPartnershipRequest(
   const email = field(formData, "email", 200);
   if (!name) return { status: "error", message: "Please enter your name." };
   if (!EMAIL_RE.test(email)) return { status: "error", message: "Please enter a valid work email." };
+  if (!formData.get("terms")) {
+    return { status: "error", message: "Please confirm you have read the terms and conditions." };
+  }
 
   const company = field(formData, "company", 160);
   const website = field(formData, "website", 300);

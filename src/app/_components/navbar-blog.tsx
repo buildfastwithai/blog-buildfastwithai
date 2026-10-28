@@ -20,6 +20,7 @@ const AGENTIC_AI_HREF = mainSiteUrl("/agentic-ai");
 const BLOG_NAV_LINKS = [
   { href: mainSiteUrl("/ai-workshops"), label: "AI Workshops", eventName: "blog_navbar_ai_workshops_clicked" },
   { href: "/all", label: "All blogs", eventName: "blog_navbar_all_blogs_clicked" },
+  { href: "/partnerships", label: "Partner with us", eventName: "blog_navbar_partnerships_clicked" },
 ] as const;
 
 export default function NavbarBlog() {

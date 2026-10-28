@@ -10,6 +10,7 @@ import {
   ChevronRight,
   ClipboardCheck,
   Gauge,
+  Handshake,
   Home,
   Layers,
   LogIn,
@@ -44,6 +45,13 @@ const UTM = "?utm_source=blog_mobile_menu&utm_medium=navbar";
 const BROWSE: NavItem[] = [
   { href: "/", label: "Latest", icon: Home, event: "blog_menu_home_clicked" },
   { href: "/all", label: "All blogs", icon: Newspaper, event: "blog_menu_all_blogs_clicked" },
+  {
+    href: "/partnerships",
+    label: "Partner with us",
+    description: "Guest posts, sponsored articles & more",
+    icon: Handshake,
+    event: "blog_menu_partnerships_clicked",
+  },
 ];
 
 // Programs and tools — on the main site.
