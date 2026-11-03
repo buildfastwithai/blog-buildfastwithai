@@ -1,9 +1,16 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { getSupabaseSecretKey, getSupabaseUrl } from "@/utils/supabase/keys";
+import { getSupabaseAdminClient } from "@/utils/supabase/admin-client";
 import { sendSlackBlogCommentNotification } from "./slack.actions";
 import { blogUrl } from "@/lib/urls";
+
+// Everything these actions return is sent to the browser, so list the columns
+// explicitly and never include the commenter's email.
+const COMMENT_COLUMNS = `
+  id, created_at, blog_id, parent_id, user_id, content, likes, is_approved,
+  user:users(full_name, avatar_url)
+`;
 
 export interface BlogComment {
   id: number;
@@ -19,43 +26,39 @@ export interface BlogComment {
   user?: {
     full_name: string | null;
     avatar_url: string | null;
-    email: string | null;
   };
   replies?: BlogComment[];
 }
 
-/** Fetch all approved top-level comments (and nested replies) for a blog */
-export async function getBlogComments(blogId: number, userId?: string): Promise<BlogComment[]> {
+/**
+ * Fetch all approved top-level comments (and nested replies) for a blog.
+ * The viewer's likes come from their verified session, never from an argument,
+ * so no one can read another user's likes through this public action.
+ */
+export async function getBlogComments(blogId: number): Promise<BlogComment[]> {
   const supabase = await createClient();
 
-  // 1. Fetch user's likes if logged in
+  // 1. Fetch the signed-in viewer's likes, if any
   const userLikedCommentIds = new Set<number>();
-  if (userId) {
-    const { createClient: createAdminClient } = await import("@supabase/supabase-js");
-    const supabaseAdmin = createAdminClient(
-      getSupabaseUrl(),
-      getSupabaseSecretKey()
-    );
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    const { data: likes, error: likesError } = await supabaseAdmin
+  if (user && !user.is_anonymous) {
+    const { data: likes } = await getSupabaseAdminClient()
       .from("blogs_comment_likes")
       .select("comment_id")
-      .eq("user_id", userId);
+      .eq("user_id", user.id);
 
     if (likes) {
-      likes.forEach(like => userLikedCommentIds.add(like.comment_id));
+      likes.forEach((like) => userLikedCommentIds.add(like.comment_id));
     }
   }
 
-  // 2. Fetch comments limit payload
+  // 2. Fetch the comments
   const { data, error } = await supabase
     .from("blogs_comments")
-    .select(
-      `
-      *,
-      user:users(full_name, avatar_url, email)
-    `
-    )
+    .select(COMMENT_COLUMNS)
     .eq("blog_id", blogId)
     .eq("is_approved", true)
     .order("created_at", { ascending: true });
@@ -65,7 +68,7 @@ export async function getBlogComments(blogId: number, userId?: string): Promise<
     return [];
   }
 
-  const comments: BlogComment[] = data || [];
+  const comments = (data ?? []) as unknown as BlogComment[];
 
   // Build nested structure & inject like state
   const topLevel: BlogComment[] = [];
@@ -113,7 +116,7 @@ export async function addBlogComment(payload: {
       parent_id: payload.parent_id ?? null,
       user_id: user.id,
     })
-    .select(`*, user:users(full_name, avatar_url, email)`)
+    .select(COMMENT_COLUMNS)
     .single();
 
   if (error) {
@@ -121,43 +124,44 @@ export async function addBlogComment(payload: {
     return { success: false, error: error.message };
   }
 
+  const comment = data as unknown as BlogComment;
+
   // --- TRIGGER SLACK NOTIFICATION ---
+  // The email comes from the verified session and only goes to Slack.
   sendSlackBlogCommentNotification({
-    userName: data.user?.full_name || user.user_metadata?.full_name || "Anonymous",
-    userEmail: data.user?.email || user.email || "",
+    userName: comment.user?.full_name || user.user_metadata?.full_name || "Anonymous",
+    userEmail: user.email || "",
     comment: payload.content,
     blogId: payload.blog_id,
     parentId: payload.parent_id,
   }).catch((e) => console.error("Failed to send Slack blog notification:", e));
 
   // --- TRIGGER EMAIL IF THIS IS A REPLY ---
-  if (data?.parent_id) {
+  if (comment.parent_id) {
     // Catch errors so we don't fail the comment creation if email fails
-    sendReplyEmailBackground(data.parent_id, data, user.id, payload.blog_id).catch((e) =>
+    sendReplyEmailBackground(comment.parent_id, comment, user.id, payload.blog_id).catch((e) =>
       console.error("Failed to send reply email:", e)
     );
   }
 
-  return { success: true, data: data as BlogComment };
+  return { success: true, data: comment };
 }
 
 // Helper function to send the email natively without webhooks
 async function sendReplyEmailBackground(
   parentId: number,
-  newComment: any,
+  newComment: BlogComment,
   replierId: string,
   blogId: number
 ) {
   try {
-    const { createClient: createAdminClient } = await import("@supabase/supabase-js");
     const { Resend } = await import("resend");
     const { render } = await import("@react-email/render");
     const { CommentReplyEmail } = await import("@/components/emails/triggers/comment-reply");
 
-    // Must use Admin client to bypass RLS and securely fetch the parent user's private email
-    const supabaseUrl = getSupabaseUrl();
-    const supabaseKey = getSupabaseSecretKey();
-    const supabaseAdmin = createAdminClient(supabaseUrl, supabaseKey);
+    // Must use Admin client to bypass RLS and fetch the parent user's private
+    // email. It stays on the server: nothing here is returned to the caller.
+    const supabaseAdmin = getSupabaseAdminClient();
     const resend = new Resend(process.env.RESEND_API_KEY);
 
     // 1. Get Parent Comment
@@ -267,10 +271,7 @@ export async function toggleBlogCommentLike(
     return { success: false, error: "You must be logged in to like a comment." };
   }
 
-  const { createClient: createAdminClient } = await import("@supabase/supabase-js");
-  const supabaseUrl = getSupabaseUrl();
-  const supabaseKey = getSupabaseSecretKey();
-  const supabaseAdmin = createAdminClient(supabaseUrl, supabaseKey);
+  const supabaseAdmin = getSupabaseAdminClient();
 
   if (shouldLike) {
     // Insert into blogs_comment_likes

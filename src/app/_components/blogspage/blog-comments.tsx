@@ -307,9 +307,7 @@ function CommentCard({
     }
   };
 
-  const displayName =
-    comment.user?.full_name ||
-    (comment.user?.email ? comment.user.email.split("@")[0] : "Anonymous");
+  const displayName = comment.user?.full_name || "Anonymous";
 
   return (
     <div className="relative">
@@ -321,7 +319,6 @@ function CommentCard({
           <Avatar
             avatarUrl={comment.user?.avatar_url}
             name={comment.user?.full_name}
-            email={comment.user?.email}
             size={avatarSize}
           />
         </div>
@@ -528,12 +525,15 @@ export function BlogComments({ blogId }: BlogCommentsProps) {
   const [comments, setComments] = useState<BlogComment[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // The action reads the viewer from the session cookie. viewerId is only a
+  // dependency so the list (and its like state) reloads on sign-in/sign-out.
+  const viewerId = user?.id;
   const loadComments = useCallback(async () => {
     setLoading(true);
-    const data = await getBlogComments(blogId, user?.id);
+    const data = await getBlogComments(blogId);
     setComments(data);
     setLoading(false);
-  }, [blogId, user?.id]);
+  }, [blogId, viewerId]);
 
   useEffect(() => {
     loadComments();
