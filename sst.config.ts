@@ -83,7 +83,7 @@ export default $config({
 
     const site = new sst.aws.Nextjs("Blog", {
       // Pin OpenNext: SST's auto-detected default predates Next.js 16.
-      openNextVersion: "4.1.5",
+      openNextVersion: "4.1.12",
       domain,
       environment: compact({
         // Public (inlined into the client bundle at build time).

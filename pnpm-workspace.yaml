@@ -3,3 +3,14 @@ allowBuilds:
   # Ships a native binary; without its postinstall Tailwind falls back to (slow) WASM.
   '@tailwindcss/oxide': true
   core-js: false
+
+# Security floors for transitive dependencies (pnpm audit --prod).
+# Drop an entry once every parent requires the patched version on its own.
+overrides:
+  # librsvg advisory GHSA-wq5f-xc86-pv6w (next's image optimizer).
+  sharp: ^0.35.5
+  # Event-loop DoS GHSA-68fv-2mgg-jv7q (via next > postcss).
+  source-map-js: ^1.2.2
+  # Buffer bounds GHSA-w5hq-g745-h8pq (via googleapis > gaxios, resend > svix).
+  # Kept on v11: it still ships the CommonJS build those packages require().
+  uuid: ^11.1.1
