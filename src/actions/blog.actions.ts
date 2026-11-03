@@ -24,6 +24,33 @@ const BLOG_CARD_FIELDS = `
   )
 `;
 
+/**
+ * Columns for a full article page (getBlogBySlug / getPreviewBlogBySlug).
+ *
+ * The row is handed to a client component (BlogLayout), so everything selected
+ * here is serialized into the page for every visitor. An explicit list means a
+ * column added to `blogs` later (an internal note, an editor id…) is not
+ * published automatically. Only real columns may be listed: PostgREST fails the
+ * whole query on an unknown one, and that would 404 every article. (`blogs`
+ * has no updated_at, author_name or author_url column.)
+ *
+ * If you read a new field on the article page, add it here too.
+ */
+const BLOG_PAGE_FIELDS = `
+  id,
+  title,
+  excerpt,
+  slug,
+  content,
+  image_url,
+  created_at,
+  published,
+  meta_keywords,
+  categories:blogs_category_join(
+    category:blogs_category(id, name)
+  )
+`;
+
 /** How many cards a listing page shows. */
 export const BLOGS_PAGE_SIZE = 24;
 
@@ -56,15 +83,19 @@ export interface BlogCardData {
   categories?: BlogCategory[];
 }
 
-/** A full blog row. Only getBlogBySlug returns this. */
+/**
+ * An article as getBlogBySlug returns it (BLOG_PAGE_FIELDS). The optional
+ * columns below exist on `blogs` but are not selected for the article page;
+ * add them to BLOG_PAGE_FIELDS before reading them there.
+ */
 export interface Blog extends BlogCardData {
   content: string | null;
-  image_path: string | null;
   published: boolean | null;
-  views: number | null;
-  is_founder_corner: boolean | null;
+  image_path?: string | null;
+  views?: number | null;
+  is_founder_corner?: boolean | null;
   is_preview?: boolean | null;
-  extra_image_urls: string[] | null;
+  extra_image_urls?: string[] | null;
   meta_keywords?: string | null;
   author_name?: string | null;
   author_url?: string | null;
@@ -319,6 +350,11 @@ export const getCuratedCollectionBySlug = cache(async (slug: string) => {
   const asId = Number(slug);
   const isLegacyId = Number.isInteger(asId) && String(asId) === slug;
 
+  // Still `*`: this row is only read on the server (CollectionView and
+  // generateMetadata are server components), so no column of it reaches the
+  // browser unless the page renders it. Narrow this to an explicit list once
+  // the blogs_curated columns are confirmed — listing one that doesn't exist
+  // would make every collection page 404.
   const base = supabase.from("blogs_curated").select(
     `
       *,
@@ -431,7 +467,8 @@ export async function getBlogCategories() {
 
   const { data: categories, error } = await supabase
     .from("blogs_category")
-    .select("*")
+    // Sent to the browser (archive filters): only what BlogCategory needs.
+    .select("id, name")
     .order("name");
 
   if (error) {
@@ -457,14 +494,7 @@ export const getBlogBySlug = cache(async (slug: string) => {
 
   const { data: blog, error } = await supabase
     .from("blogs")
-    .select(
-      `
-      *,
-      categories:blogs_category_join(
-        category:blogs_category(id, name)
-      )
-    `
-    )
+    .select(BLOG_PAGE_FIELDS)
     .eq("slug", slug)
     .eq("published", true)
     .maybeSingle();
@@ -498,14 +528,7 @@ export async function getPreviewBlogBySlug(slug: string) {
 
   const { data: blog, error } = await supabase
     .from("blogs")
-    .select(
-      `
-      *,
-      categories:blogs_category_join(
-        category:blogs_category(id, name)
-      )
-    `
-    )
+    .select(BLOG_PAGE_FIELDS)
     .eq("slug", slug)
     .eq("is_preview", true)
     .maybeSingle();
