@@ -102,7 +102,11 @@ export default function LoginForm() {
 			// stays a fixed, query-less URL that matches Supabase's allow-list
 			// exactly — if it doesn't match, Supabase falls back to the project's
 			// Site URL, i.e. the main site.
-			document.cookie = `login_source=${encodeURIComponent(pathname)}; path=/; max-age=600; SameSite=Lax`;
+			// Secure on https (every deployed stage) so it never travels over
+			// plain http; left off for http://localhost dev, where a Secure
+			// cookie would not be stored by every browser.
+			const secure = window.location.protocol === "https:" ? "; Secure" : "";
+			document.cookie = `login_source=${encodeURIComponent(pathname)}; path=/; max-age=600; SameSite=Lax${secure}`;
 
 			// Must be on Supabase → Auth → URL Configuration → Redirect URLs
 			// (https://blog.buildfastwithai.com/**).
