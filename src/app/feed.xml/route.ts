@@ -23,6 +23,22 @@ function escapeXml(unsafe: string): string {
 }
 
 /**
+ * An http(s) URL ready for an XML attribute, or null. Image URLs come from
+ * the database, so anything that isn't a plain web URL is dropped, and the
+ * rest is escaped so a quote can't end the attribute early.
+ */
+function feedUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    return escapeXml(url.toString());
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Generate RSS feed for blog posts
  */
 export async function GET() {
@@ -62,7 +78,11 @@ export async function GET() {
     </image>
     ${blogs
       ?.map((blog) => {
-        const blogUrl = `${BASE_URL}/${blog.slug}`;
+        // Slugs and image URLs come from the database: escape both.
+        const blogUrl = escapeXml(
+          `${BASE_URL}/${encodeURIComponent(blog.slug ?? "")}`
+        );
+        const imageUrl = feedUrl(blog.image_url);
         const pubDate = blog.created_at
           ? new Date(blog.created_at).toUTCString()
           : new Date().toUTCString();
@@ -77,7 +97,7 @@ export async function GET() {
       <guid isPermaLink="true">${blogUrl}</guid>
       <description>${description}</description>
       <pubDate>${pubDate}</pubDate>
-      ${blog.image_url ? `<enclosure url="${blog.image_url}" type="image/jpeg"/>` : ""}
+      ${imageUrl ? `<enclosure url="${imageUrl}" type="image/jpeg"/>` : ""}
     </item>`;
       })
       .join("")}
