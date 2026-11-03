@@ -36,6 +36,7 @@ import {
   UserCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MAX_COMMENT_LENGTH } from "@/lib/comments";
 import { usePostHog } from "posthog-js/react";
 
 // ────────────────────────────────────────────────────────
@@ -178,6 +179,7 @@ function CommentComposer({
               : placeholder ?? "Share your thoughts…"
           }
           rows={2}
+          maxLength={MAX_COMMENT_LENGTH}
           autoFocus={autoFocus}
           disabled={submitting}
           className="resize-none text-sm bg-muted/40 border-border focus-visible:ring-primary/30 placeholder:text-muted-foreground rounded-xl min-h-[72px]"
@@ -191,6 +193,8 @@ function CommentComposer({
         <div className="flex items-center justify-between">
           <p className="text-[11px] text-muted-foreground/60 hidden sm:block">
             Ctrl+Enter to submit
+            {text.length > MAX_COMMENT_LENGTH - 500 &&
+              ` · ${text.length}/${MAX_COMMENT_LENGTH}`}
           </p>
           <div className="flex gap-2 ml-auto">
             {onCancel && (

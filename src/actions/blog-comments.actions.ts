@@ -1,9 +1,59 @@
 "use server";
 
+import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
 import { getSupabaseAdminClient } from "@/utils/supabase/admin-client";
-import { sendSlackBlogCommentNotification } from "./slack.actions";
+import { getSupabaseUrl } from "@/utils/supabase/keys";
+import { MAX_COMMENT_LENGTH } from "@/lib/comments";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { notifySlackOfBlogComment } from "@/lib/slack";
 import { blogUrl } from "@/lib/urls";
+
+const HOUR = 60 * 60 * 1000;
+
+// Rate limits are in-memory and per Lambda instance (see rate-limit.ts): they
+// stop a single client looping, not a distributed flood.
+const COMMENT_LIMITS = {
+  perUserMinute: 5,
+  perUserHour: 30,
+  perIpMinute: 10,
+  // Notifications are throttled on top of posting, so even a burst that gets
+  // through can't flood Slack or someone's inbox.
+  slackPerUserHour: 10,
+  replyEmailsPerReplierHour: 10,
+  replyEmailsPerRecipientHour: 5,
+};
+
+function isPositiveInt(value: unknown): value is number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
+}
+
+/**
+ * Avatar URLs come from user profiles, so only embed them in outgoing email
+ * when they point at a host we expect (Google profile photos, our Supabase
+ * storage, our own domains). Anything else gets the default avatar.
+ */
+function safeAvatarUrl(url: string | null | undefined): string {
+  if (!url) return "";
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "https:") return "";
+    const host = parsed.hostname.toLowerCase();
+    const allowed =
+      host.endsWith(".googleusercontent.com") ||
+      host === new URL(getSupabaseUrl()).hostname ||
+      host === "auth.buildfastwithai.com" ||
+      host === "www.buildfastwithai.com";
+    return allowed ? parsed.toString() : "";
+  } catch {
+    return "";
+  }
+}
+
+/** One line, bounded: for names that end up in an email subject. */
+function singleLine(text: string, max: number): string {
+  return text.replace(/[\r\n\t]+/g, " ").trim().slice(0, max);
+}
 
 // Everything these actions return is sent to the browser, so list the columns
 // explicitly and never include the commenter's email.
@@ -108,12 +158,56 @@ export async function addBlogComment(payload: {
     return { success: false, error: "You must be logged in to comment." };
   }
 
+  // --- Validate input (this is a public endpoint; don't trust the client) ---
+  const content =
+    typeof payload?.content === "string" ? payload.content.trim() : "";
+  if (!content) {
+    return { success: false, error: "Comment cannot be empty." };
+  }
+  if (content.length > MAX_COMMENT_LENGTH) {
+    return {
+      success: false,
+      error: `Comments can be at most ${MAX_COMMENT_LENGTH} characters.`,
+    };
+  }
+  const blogId = payload?.blog_id;
+  const parentId = payload?.parent_id ?? null;
+  if (!isPositiveInt(blogId) || (parentId !== null && !isPositiveInt(parentId))) {
+    return { success: false, error: "Invalid comment." };
+  }
+
+  // --- Rate limit per user and per IP ---
+  const ip = getClientIp(await headers());
+  const allowed =
+    rateLimit({ key: `comment:user-min:${user.id}`, limit: COMMENT_LIMITS.perUserMinute, windowMs: 60_000 }).ok &&
+    rateLimit({ key: `comment:user-hour:${user.id}`, limit: COMMENT_LIMITS.perUserHour, windowMs: HOUR }).ok &&
+    rateLimit({ key: `comment:ip-min:${ip}`, limit: COMMENT_LIMITS.perIpMinute, windowMs: 60_000 }).ok;
+  if (!allowed) {
+    return {
+      success: false,
+      error: "You're commenting too quickly. Please wait a minute and try again.",
+    };
+  }
+
+  // --- A reply must answer a visible comment on the same article ---
+  if (parentId !== null) {
+    const { data: parent } = await supabase
+      .from("blogs_comments")
+      .select("id, blog_id")
+      .eq("id", parentId)
+      .eq("is_approved", true)
+      .maybeSingle();
+    if (!parent || parent.blog_id !== blogId) {
+      return { success: false, error: "That comment is no longer available." };
+    }
+  }
+
   const { data, error } = await supabase
     .from("blogs_comments")
     .insert({
-      blog_id: payload.blog_id,
-      content: payload.content.trim(),
-      parent_id: payload.parent_id ?? null,
+      blog_id: blogId,
+      content,
+      parent_id: parentId,
       user_id: user.id,
     })
     .select(COMMENT_COLUMNS)
@@ -121,25 +215,35 @@ export async function addBlogComment(payload: {
 
   if (error) {
     console.error("Error adding comment:", error);
-    return { success: false, error: error.message };
+    return { success: false, error: "Failed to post. Please try again." };
   }
 
   const comment = data as unknown as BlogComment;
 
-  // --- TRIGGER SLACK NOTIFICATION ---
+  // --- TRIGGER SLACK NOTIFICATION (throttled per user) ---
   // The email comes from the verified session and only goes to Slack.
-  sendSlackBlogCommentNotification({
-    userName: comment.user?.full_name || user.user_metadata?.full_name || "Anonymous",
-    userEmail: user.email || "",
-    comment: payload.content,
-    blogId: payload.blog_id,
-    parentId: payload.parent_id,
-  }).catch((e) => console.error("Failed to send Slack blog notification:", e));
+  if (
+    rateLimit({ key: `comment:slack:${user.id}`, limit: COMMENT_LIMITS.slackPerUserHour, windowMs: HOUR }).ok
+  ) {
+    notifySlackOfBlogComment(supabase, {
+      userName: comment.user?.full_name || user.user_metadata?.full_name || "Anonymous",
+      userEmail: user.email || "",
+      comment: content,
+      blogId,
+      parentId,
+    }).catch((e) => console.error("Failed to send Slack blog notification:", e));
+  }
 
   // --- TRIGGER EMAIL IF THIS IS A REPLY ---
-  if (comment.parent_id) {
+  // Only for replies that are visible (a held-for-moderation reply shouldn't
+  // email anyone), and throttled per replier.
+  if (
+    comment.parent_id &&
+    comment.is_approved !== false &&
+    rateLimit({ key: `comment:reply-email:${user.id}`, limit: COMMENT_LIMITS.replyEmailsPerReplierHour, windowMs: HOUR }).ok
+  ) {
     // Catch errors so we don't fail the comment creation if email fails
-    sendReplyEmailBackground(comment.parent_id, comment, user.id, payload.blog_id).catch((e) =>
+    sendReplyEmailBackground(comment.parent_id, comment, user.id, blogId).catch((e) =>
       console.error("Failed to send reply email:", e)
     );
   }
@@ -176,6 +280,17 @@ async function sendReplyEmailBackground(
     // Prevent recursive emails if they reply to themselves
     if (parentComment.user_id === replierId) return;
 
+    // Cap how many reply emails one person can receive in an hour
+    if (
+      !rateLimit({
+        key: `comment:reply-email-to:${parentComment.user_id}`,
+        limit: COMMENT_LIMITS.replyEmailsPerRecipientHour,
+        windowMs: HOUR,
+      }).ok
+    ) {
+      return;
+    }
+
     // 2. Look up Parent User Email
     const { data: parentUser, error: userError } = await supabaseAdmin
       .from("users")
@@ -192,7 +307,7 @@ async function sendReplyEmailBackground(
       .eq("id", replierId)
       .single();
 
-    const replierName = replierUser?.full_name || "Someone";
+    const replierName = singleLine(replierUser?.full_name || "", 80) || "Someone";
 
     // 4. Look up Blog Post details for the link
     const { data: blog, error: blogError } = await supabaseAdmin
@@ -204,15 +319,15 @@ async function sendReplyEmailBackground(
     if (blogError || !blog) return;
 
     const threadUrl = blogUrl(`/${blog.slug}`);
-    const emailSubject = `New reply from ${replierName} on "${blog.title}"`;
+    const emailSubject = `New reply from ${replierName} on "${singleLine(blog.title || "our blog", 150)}"`;
 
     // 5. Generate Email HTML via React-Email
     const emailHtml = await render(
       CommentReplyEmail({
         parentUserName: parentUser.full_name || "there",
-        parentUserAvatar: parentUser.avatar_url || "",
+        parentUserAvatar: safeAvatarUrl(parentUser.avatar_url),
         replierName: replierName,
-        replierAvatar: replierUser?.avatar_url || "",
+        replierAvatar: safeAvatarUrl(replierUser?.avatar_url),
         blogTitle: blog.title || "our blog",
         parentCommentContent: parentComment.content,
         replyContent: newComment.content,
@@ -269,6 +384,15 @@ export async function toggleBlogCommentLike(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return { success: false, error: "You must be logged in to like a comment." };
+  }
+
+  if (!isPositiveInt(commentId) || typeof shouldLike !== "boolean") {
+    return { success: false, error: "Invalid request." };
+  }
+
+  // Each toggle is three service-role writes; cap it per user.
+  if (!rateLimit({ key: `comment:like:${user.id}`, limit: 30, windowMs: 60_000 }).ok) {
+    return { success: false, error: "Too many requests. Please slow down." };
   }
 
   const supabaseAdmin = getSupabaseAdminClient();
