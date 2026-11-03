@@ -23,19 +23,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { email } = await request.json();
+    const body = await request.json().catch(() => null);
+    const email =
+      typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
 
     // Validate email
-    if (!email || !email.trim()) {
+    if (!email) {
       return NextResponse.json(
         { error: "Email is required" },
         { status: 400 }
       );
     }
 
-    // Basic email validation
+    // Basic email validation (254 is the longest valid address)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (email.length > 254 || !emailRegex.test(email)) {
       return NextResponse.json(
         { error: "Please enter a valid email address" },
         { status: 400 }
@@ -46,47 +48,38 @@ export async function POST(request: NextRequest) {
     // client is enough (and keeps this route free of next/headers).
     const supabase = getStaticSupabaseClient();
 
-    // Check if email already exists
-    // maybeSingle, not single: `single()` errors on 0 rows, which logged a
-    // PGRST116 for every genuinely new subscriber.
+    // New and existing subscribers get the SAME response below, so this
+    // endpoint can't be used to test whether an address is on the list.
+    //
+    // The look-up only avoids inserting a duplicate row. It relies on anon
+    // being able to SELECT blogs_subscriber, which it should not; once that is
+    // locked down it simply finds nothing, and a unique constraint on email
+    // (23505, handled below) keeps duplicates out instead.
+    // maybeSingle, not single: `single()` errors on 0 rows.
     const { data: existingSubscriber } = await supabase
       .from("blogs_subscriber")
       .select("id")
-      .eq("email", email.trim().toLowerCase())
+      .eq("email", email)
       .maybeSingle();
 
-    if (existingSubscriber) {
-      return NextResponse.json(
-        { error: "You're already subscribed to our newsletter!" },
-        { status: 409 }
-      );
-    }
+    if (!existingSubscriber) {
+      // No .select(): the inserted row is never read back or returned.
+      const { error } = await supabase
+        .from("blogs_subscriber")
+        .insert([{ email }]);
 
-    // Insert new subscriber
-    const { data, error } = await supabase
-      .from("blogs_subscriber")
-      .insert([
-        {
-          email: email.trim().toLowerCase(),
-        }
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error inserting subscriber:", error);
-      return NextResponse.json(
-        { error: "Failed to subscribe. Please try again." },
-        { status: 500 }
-      );
+      if (error && error.code !== "23505") {
+        console.error("Error inserting subscriber:", error.code, error.message);
+        return NextResponse.json(
+          { error: "Failed to subscribe. Please try again." },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json(
-      { 
-        message: "Successfully subscribed to our newsletter!",
-        subscriber: data 
-      },
-      { status: 201 }
+      { message: "Thanks for subscribing! You're on the list." },
+      { status: 200 }
     );
 
   } catch (error) {
