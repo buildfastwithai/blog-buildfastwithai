@@ -1,57 +1,50 @@
 "use server";
 
-import { headers } from "next/headers";
+import { type LoginType, recordLoginEvent } from "@/lib/login-tracking";
+import { rateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/utils/supabase/server";
 
-export interface LoginTrackingData {
-  user_id: string;
-  email: string | null;
-  login_source: string;
-  login_method: "google" | "email_password" | "email_link" | "phone_otp";
-  login_type: "sign_in" | "sign_up";
-  was_anonymous?: boolean;
-  user_agent?: string | null;
-  ip_address?: string | null;
-}
+const LOGIN_TYPES: readonly LoginType[] = ["sign_in", "sign_up"];
 
 /**
- * Track user login event in database — same `login_tracking` table the main
- * site writes to, so blog sign-ins show up in the same reports.
+ * Record an email/password sign-in (or a sign-up that returned a session) from
+ * the login form.
+ *
+ * This is a public endpoint ("use server" + client import), so it trusts
+ * nothing from the caller except two labels: who signed in comes from the
+ * verified session, IP and user agent come from the request headers, and the
+ * method is fixed. Google sign-ins and confirmed email sign-ups are recorded
+ * by the /auth routes on the server instead.
  */
-export const trackLoginEvent = async (data: LoginTrackingData) => {
-  try {
-    const supabase = await createClient();
+export async function trackPasswordLogin(input: {
+  login_type: LoginType;
+  login_source: string;
+}): Promise<{ success: boolean }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    // Get headers for IP and user agent if not provided
-    const headersList = await headers();
-    const userAgent = data.user_agent || headersList.get("user-agent");
-    const ipAddress =
-      data.ip_address ||
-      headersList.get("x-forwarded-for")?.split(",")[0] ||
-      headersList.get("x-real-ip");
+  if (!user || user.is_anonymous) return { success: false };
 
-    const { error } = await supabase.from("login_tracking").insert({
-      user_id: data.user_id,
-      email: data.email,
-      login_source: data.login_source,
-      login_method: data.login_method,
-      login_type: data.login_type,
-      was_anonymous: data.was_anonymous || false,
-      user_agent: userAgent,
-      ip_address: ipAddress,
-    });
+  const type = LOGIN_TYPES.includes(input?.login_type)
+    ? input.login_type
+    : "sign_in";
 
-    if (error) {
-      console.error("[track login event error]", error);
-      return { success: false, error: error.message };
-    }
+  // A real login fires this once; anything more is a loop or a script.
+  // In-memory and per instance, so best effort (see rate-limit.ts).
+  const limited = !rateLimit({
+    key: `login-tracking:${user.id}`,
+    limit: 5,
+    windowMs: 60_000,
+  }).ok;
+  if (limited) return { success: false };
 
-    return { success: true };
-  } catch (error) {
-    console.error("[track login event exception]", error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
-  }
-};
+  await recordLoginEvent(supabase, user, {
+    method: "email_password",
+    type,
+    source: input?.login_source,
+  });
+
+  return { success: true };
+}

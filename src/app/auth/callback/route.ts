@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { trackLoginEvent } from "@/actions/login-tracking.actions";
+import { recordLoginEvent } from "@/lib/login-tracking";
 import { createClient } from "@/utils/supabase/server";
 
 /**
@@ -40,18 +40,14 @@ export async function GET(request: Request) {
     const { error, data } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-
-      // Fire and forget — don't block the redirect on tracking.
+      // The user comes from the code exchange, not from the request. Awaited:
+      // on Lambda, work left running after the response is sent can be
+      // frozen and lost. recordLoginEvent never throws.
       if (data.user) {
-        trackLoginEvent({
-          user_id: data.user.id,
-          email: data.user.email ?? null,
-          login_source: loginSource,
-          login_method: "google",
-          login_type: "sign_in",
-          was_anonymous: false,
-        }).catch((error) => {
-          console.error("Failed to track OAuth login event:", error);
+        await recordLoginEvent(supabase, data.user, {
+          method: "google",
+          type: "sign_in",
+          source: loginSource,
         });
       }
 

@@ -27,7 +27,7 @@ import {
 	PencilIcon,
 } from "lucide-react";
 import { Alert, AlertTitle } from "./ui/alert";
-import { trackLoginEvent } from "@/actions/login-tracking.actions";
+import { trackPasswordLogin } from "@/actions/login-tracking.actions";
 import { usePostHog } from "posthog-js/react";
 
 type Step = "email" | "password" | "create" | "sent";
@@ -226,17 +226,18 @@ export default function LoginForm() {
 						was_anonymous: isAnonymous,
 					});
 
-					// Track in database
-					trackLoginEvent({
-						user_id: data.user.id,
-						email: data.user.email ?? null,
-						login_source: pathname,
-						login_method: "email_password",
-						login_type: "sign_up",
-						was_anonymous: isAnonymous,
-					}).catch((error) => {
-						console.error("Failed to track signup event:", error);
-					});
+					// Track in database. A sign-up that needs email confirmation has
+					// no session yet; /auth/confirm records it once the link is
+					// clicked. Only a sign-up that signs in straight away is
+					// recorded from here.
+					if (data.session) {
+						trackPasswordLogin({
+							login_type: "sign_up",
+							login_source: pathname,
+						}).catch((error) => {
+							console.error("Failed to track signup event:", error);
+						});
+					}
 				}
 
 				setSentKind("signup");
@@ -274,14 +275,10 @@ export default function LoginForm() {
 					was_anonymous: isAnonymous,
 				});
 
-				// Track in database
-				trackLoginEvent({
-					user_id: data.user.id,
-					email: data.user.email ?? null,
-					login_source: pathname,
-					login_method: "email_password",
+				// Track in database (the server reads who signed in from the session)
+				trackPasswordLogin({
 					login_type: "sign_in",
-					was_anonymous: isAnonymous,
+					login_source: pathname,
 				}).catch((error) => {
 					console.error("Failed to track signin event:", error);
 				});

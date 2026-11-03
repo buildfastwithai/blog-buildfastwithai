@@ -1,7 +1,28 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";
+import {
+  type LoginMethod,
+  type LoginType,
+  recordLoginEvent,
+} from "@/lib/login-tracking";
 import { createClient } from "@/utils/supabase/server";
+
+/**
+ * Which login_tracking row a confirmed link stands for. The blog's login form
+ * only sends sign-up confirmations here, so a PKCE `code` (which carries no
+ * type) counts as a sign-up. Recovery, invite and email-change links are not
+ * logins and are not recorded.
+ */
+function trackedEvent(
+  type: EmailOtpType | null,
+): { method: LoginMethod; type: LoginType } | null {
+  if (type === null || type === "signup" || type === "email") {
+    return { method: "email_password", type: "sign_up" };
+  }
+  if (type === "magiclink") return { method: "email_link", type: "sign_in" };
+  return null;
+}
 
 /**
  * Email confirmation / magic-link landing.
@@ -26,12 +47,24 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient();
 
   if (token_hash && type) {
-    const { error } = await supabase.auth.verifyOtp({ type, token_hash });
-    if (!error) redirect(next);
+    const { data, error } = await supabase.auth.verifyOtp({ type, token_hash });
+    if (!error) {
+      const event = trackedEvent(type);
+      if (data.user && event) {
+        await recordLoginEvent(supabase, data.user, { ...event, source: next });
+      }
+      redirect(next);
+    }
     console.error("Email confirm (token_hash) error:", error);
   } else if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) redirect(next);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) {
+      const event = trackedEvent(null);
+      if (data.user && event) {
+        await recordLoginEvent(supabase, data.user, { ...event, source: next });
+      }
+      redirect(next);
+    }
     console.error("Email confirm (code) error:", error);
   }
 
