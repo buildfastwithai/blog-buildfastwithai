@@ -6,10 +6,17 @@ on:
       - main
   workflow_dispatch:
     inputs:
+      # A fixed list, not free text: the stage is also the GitHub environment
+      # name, and a made-up one would be created on the fly with no required
+      # reviewers. The AWS role only trusts these two environments.
       stage:
-        description: SST stage to deploy (e.g. staging). "production" is the live site.
+        description: SST stage to deploy. "production" is the live site.
+        type: choice
         required: true
         default: staging
+        options:
+          - staging
+          - production
 
 permissions:
   id-token: write # OIDC token for AWS

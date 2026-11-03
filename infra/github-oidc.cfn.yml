@@ -81,12 +81,16 @@ Resources:
             Condition:
               StringEquals:
                 token.actions.githubusercontent.com:aud: sts.amazonaws.com
-              StringLike:
-                # Only jobs that run inside a GitHub *environment* of this repo
-                # (deploy.yml uses `environment: production` / `staging`).
+                # Only jobs running in this repo's `production` or `staging`
+                # GitHub environment (deploy.yml). Not `environment:*`: any
+                # writer could otherwise dispatch a job into a brand-new,
+                # unprotected environment and still get this role. Protect
+                # both environments with required reviewers in GitHub.
                 token.actions.githubusercontent.com:sub:
-                  - !Sub repo:${GitHubOrg}/${GitHubRepo}:environment:*
-                  - !Sub repo:${GitHubOrg}@${GitHubOrgId}/${GitHubRepo}@${GitHubRepoId}:environment:*
+                  - !Sub repo:${GitHubOrg}/${GitHubRepo}:environment:production
+                  - !Sub repo:${GitHubOrg}/${GitHubRepo}:environment:staging
+                  - !Sub repo:${GitHubOrg}@${GitHubOrgId}/${GitHubRepo}@${GitHubRepoId}:environment:production
+                  - !Sub repo:${GitHubOrg}@${GitHubOrgId}/${GitHubRepo}@${GitHubRepoId}:environment:staging
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AdministratorAccess
 
