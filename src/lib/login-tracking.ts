@@ -2,6 +2,7 @@ import "server-only";
 
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { headers } from "next/headers";
+import { getClientIp } from "@/lib/rate-limit";
 
 export type LoginMethod = "google" | "email_password" | "email_link";
 export type LoginType = "sign_in" | "sign_up";
@@ -34,12 +35,8 @@ export async function recordLoginEvent(
 ): Promise<void> {
   try {
     const headerList = await headers();
-    // Best effort, for reporting only: the first X-Forwarded-For entry is
-    // whatever the client or the nearest proxy put there.
-    const ipAddress =
-      headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-      headerList.get("x-real-ip") ||
-      null;
+    const clientIp = getClientIp(headerList);
+    const ipAddress = clientIp === "unknown" ? null : clientIp;
     const userAgent = headerList.get("user-agent")?.slice(0, 512) ?? null;
 
     const { error } = await supabase.from("login_tracking").insert({

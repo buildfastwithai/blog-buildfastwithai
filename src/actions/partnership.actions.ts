@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { Resend } from "resend";
-import { rateLimit } from "@/lib/rate-limit";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 import { appendPartnershipRow } from "@/lib/partnership-sheet";
 
 /** Inboxes that receive every partnership request. */
@@ -50,8 +50,7 @@ export async function submitPartnershipRequest(
     return { status: "success", message: "Thanks, your request was sent." };
   }
 
-  const h = await headers();
-  const ip = h.get("x-forwarded-for")?.split(",")[0].trim() || h.get("x-real-ip") || "unknown";
+  const ip = getClientIp(await headers());
   const limit = rateLimit({ key: `partnership:${ip}`, limit: 5, windowMs: 60 * 60 * 1000 });
   if (!limit.ok) {
     return {

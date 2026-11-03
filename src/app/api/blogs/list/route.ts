@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   // Responses are CDN-cached, but a varying `q` busts the cache on every call —
   // so this endpoint can be used to hammer Postgres directly. Cap it.
   const limit = rateLimit({
-    key: `blog-list:${getClientIp(request)}`,
+    key: `blog-list:${getClientIp(request.headers)}`,
     limit: 60,
     windowMs: 60 * 1000,
   });

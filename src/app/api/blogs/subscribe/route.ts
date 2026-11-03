@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     // so without a cap a single script can drive unbounded invocations and
     // rows. Five signups per IP per 10 minutes is far above real human use.
     const limit = rateLimit({
-      key: `blog-subscribe:${getClientIp(request)}`,
+      key: `blog-subscribe:${getClientIp(request.headers)}`,
       limit: 5,
       windowMs: 10 * 60 * 1000,
     });

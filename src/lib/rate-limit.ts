@@ -1,18 +1,17 @@
-import type { NextRequest } from "next/server";
-
 /**
- * Best-effort in-memory sliding-window rate limiter.
+ * BEST-EFFORT in-memory fixed-window rate limiter. Not a hard guarantee.
  *
- * Deliberately has no external dependency — no Redis, no Upstash, no extra
- * monthly bill. The trade-off is that state lives in a single serverless
- * instance's memory: it resets on cold start and is not shared across
- * concurrent instances, so a determined distributed attacker can exceed the
- * limit by fanning out.
+ * State lives in one Lambda instance's memory, so:
+ *  - it resets on every cold start;
+ *  - it is NOT shared between concurrent instances — a burst that fans out
+ *    across N instances gets up to N × limit through;
+ *  - once MAX_TRACKED_KEYS live keys exist, the oldest is evicted, so an
+ *    attacker with many IPs can push their own counter out.
  *
- * What it *does* reliably stop is the realistic case — one script hammering a
- * public endpoint — which is what turns an unauthenticated POST route into an
- * unbounded invocation bill. If you later need hard guarantees, swap the Map
- * for Upstash Redis; the call signature stays the same.
+ * It does stop the common case (one client looping on an endpoint from one
+ * warm instance). For real protection on public write endpoints, put AWS WAF
+ * rate-based rules on the CloudFront distribution, or swap the Map for a
+ * shared store (Upstash Redis / DynamoDB) — the call signature can stay.
  */
 type Hit = { count: number; resetAt: number };
 
@@ -72,9 +71,42 @@ export function rateLimit({
   };
 }
 
-/** Best-guess client IP from proxy headers, falling back to a shared bucket. */
-export function getClientIp(request: NextRequest): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim();
-  return request.headers.get("x-real-ip") ?? "unknown";
+type HeaderSource = { get(name: string): string | null };
+
+/**
+ * Client IP for rate limiting, from headers a client cannot forge when the
+ * request comes through CloudFront.
+ *
+ * 1. `CloudFront-Viewer-Address` ("ip:port") — set by CloudFront from the TCP
+ *    connection and forwarded by SST's origin request policy
+ *    (AllViewerExceptHostHeader includes the viewer location headers).
+ * 2. The LAST `X-Forwarded-For` entry — CloudFront appends the address it saw,
+ *    whereas the first entry is whatever the client sent.
+ *
+ * Both assume the server is only reachable through CloudFront. If its Lambda
+ * function URL can be called directly, these headers are caller-controlled.
+ *
+ * Accepts `request.headers` or the result of `await headers()`.
+ */
+export function getClientIp(source: HeaderSource): string {
+  const viewer = source.get("cloudfront-viewer-address")?.trim();
+  if (viewer) {
+    // IPv4 "203.0.113.7:46532", IPv6 "2001:db8::1:46532": the port follows
+    // the last colon.
+    const cut = viewer.lastIndexOf(":");
+    const ip = cut > 0 ? viewer.slice(0, cut) : viewer;
+    if (ip) return ip.replace(/^\[|\]$/g, "");
+  }
+
+  const forwarded = source.get("x-forwarded-for");
+  if (forwarded) {
+    const hops = forwarded
+      .split(",")
+      .map((hop) => hop.trim())
+      .filter(Boolean);
+    const last = hops[hops.length - 1];
+    if (last) return last;
+  }
+
+  return source.get("x-real-ip")?.trim() || "unknown";
 }
