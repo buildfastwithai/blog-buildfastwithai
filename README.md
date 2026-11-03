@@ -54,8 +54,9 @@ See [`.env.example`](.env.example). Notable:
 - `NEXT_PUBLIC_NOINDEX=true` — emits `noindex` on every page and a
   disallow-all `robots.txt`. Non-production stages force it on; set it on
   production until you are ready for the new domain to be indexed.
-- `REVALIDATE_SECRET` — for `/api/revalidate/blog?slug=<slug>&secret=…`, which
-  purges the ISR cache after publishing/editing a post.
+- `REVALIDATE_SECRET` — for `/api/revalidate/blog?slug=<slug>`, which purges
+  the ISR cache after publishing/editing a post. Send the secret in the
+  `x-revalidate-secret` header; a `?secret=` query param is no longer accepted.
 - `INDEXNOW_KEY` — optional. When set, `/api/revalidate/blog` also submits the
   changed article URLs to IndexNow (Bing, Yandex, Naver, Seznam) and the key is
   served at `/indexnow-key.txt` for verification. Any 8-128 character
@@ -230,9 +231,19 @@ pnpm sst remove --stage <your-name>   # tear it down afterwards
 
 ### Cache purging
 
-`/api/revalidate/blog?slug=…&secret=…` works as before — `revalidatePath()`
-goes through OpenNext's revalidation queue and updates the ISR cache in S3;
-CloudFront honours the resulting cache headers. There is no need to invalidate
-CloudFront by hand after publishing a post.
+```bash
+curl -H "x-revalidate-secret: $REVALIDATE_SECRET" \
+  "https://blog.buildfastwithai.com/api/revalidate/blog?slug=<slug>"
+# or, for several posts (max 50):
+curl -X POST -H "x-revalidate-secret: $REVALIDATE_SECRET" \
+  -H "content-type: application/json" -d '{"slugs":["a","b"]}' \
+  https://blog.buildfastwithai.com/api/revalidate/blog
+```
+
+The secret is read from the header only (a query-string secret ends up in
+logs and browser history). `revalidatePath()` goes through OpenNext's
+revalidation queue and updates the ISR cache in S3; CloudFront honours the
+resulting cache headers. There is no need to invalidate CloudFront by hand
+after publishing a post.
 
 Redeploy
