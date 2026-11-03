@@ -29,7 +29,6 @@ import {
 import { Alert, AlertTitle } from "./ui/alert";
 import { trackLoginEvent } from "@/actions/login-tracking.actions";
 import { usePostHog } from "posthog-js/react";
-import { checkEmailRegistered } from "@/actions/auth-check.actions";
 
 type Step = "email" | "password" | "create" | "sent";
 type SentKind = "signup" | "verify";
@@ -52,8 +51,10 @@ export default function LoginForm() {
 	const [forgotPassword, setForgotPassword] = useState<boolean>(false);
 	const [mailMessage, setMailMessage] = useState<boolean>(false);
 
-	// Single email-first flow: ask for the email, look it up, then send the user
-	// to the sign-in or sign-up step automatically.
+	// Email-first flow: ask for the email, then the password. The email step
+	// never asks the server whether an account exists — that would let anyone
+	// enumerate registered emails — so every email lands on the sign-in step,
+	// with a "Create one" switch for new readers.
 	const [step, setStep] = useState<Step>("email");
 	const [email, setEmail] = useState<string>("");
 	const [password, setPassword] = useState<string>("");
@@ -124,45 +125,17 @@ export default function LoginForm() {
 		}
 	};
 
-	// Step 1: look up the email and decide whether this is a sign-in or a sign-up
-	const handleEmailContinue = async (e: React.FormEvent<HTMLFormElement>) => {
+	// Step 1: collect the email, then move to the password step. No lookup.
+	const handleEmailContinue = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		const trimmedEmail = email.trim();
 
-		if (!trimmedEmail) {
+		if (!email.trim()) {
 			setNotice({ tone: "error", text: "Please enter your email address." });
 			return;
 		}
 
-		try {
-			setLoading(true);
-			setNotice(null);
-
-			const { status } = await checkEmailRegistered(trimmedEmail);
-
-			posthog?.capture("auth_email_checked", {
-				status,
-				login_source: pathname,
-			});
-
-			if (status === "new") {
-				setStep("create");
-				setNotice({
-					tone: "info",
-					text: "We couldn't find an account with this email. Create one below — it only takes a moment.",
-				});
-				return;
-			}
-
-			// "registered" and "unknown" both land on the password step; an unknown
-			// result just means we couldn't verify, so we assume an existing user.
-			setStep("password");
-		} catch (error) {
-			console.error("Email check failed:", error);
-			setStep("password");
-		} finally {
-			setLoading(false);
-		}
+		setNotice(null);
+		setStep("password");
 	};
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -213,7 +186,7 @@ export default function LoginForm() {
 						});
 						return;
 					}
-					// Race: the account was created between our check and this call
+					// The email already has an account
 					if (error.message?.toLowerCase().includes("already registered")) {
 						setStep("password");
 						setPassword("");
@@ -279,13 +252,13 @@ export default function LoginForm() {
 			});
 
 			if (error) {
-				// We already confirmed the account exists, so this is a wrong password
+				// Same message whether the email is unknown or the password is wrong
 				if (
 					error.message?.toLowerCase().includes("invalid login credentials")
 				) {
 					setNotice({
 						tone: "error",
-						text: "Incorrect password. Try again or reset your password.",
+						text: "Incorrect email or password. New here? Create an account below.",
 					});
 					return;
 				}
@@ -529,7 +502,7 @@ export default function LoginForm() {
 									</Card>
 
 									{step === "email" ? (
-										/* Step 1 — email lookup */
+										/* Step 1 — email */
 										<form onSubmit={handleEmailContinue} className="w-full">
 											<Card className="border-transparent bg-transparent shadow-none">
 												<CardContent className="grid gap-4">
@@ -582,7 +555,7 @@ export default function LoginForm() {
 														{loading ? (
 															<>
 																<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-																Checking...
+																Please wait...
 															</>
 														) : (
 															"Continue"
@@ -596,7 +569,7 @@ export default function LoginForm() {
 														</p>
 													)}
 													<p className="text-center text-sm text-[var(--claude-mid)]">
-														New here? We&apos;ll set up your account on the next
+														New here? You can create an account on the next
 														step.
 													</p>
 												</CardFooter>
@@ -705,7 +678,7 @@ export default function LoginForm() {
 															{notice.text}
 														</p>
 													)}
-													{/* Manual escape hatch in case the lookup guessed wrong */}
+													{/* Switch between signing in and creating an account */}
 													<div className="flex items-center gap-2">
 														<p className="text-sm text-[var(--claude-mid)]">
 															{state === "sign-up"
