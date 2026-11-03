@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { sanitizeContentHtml } from "@/lib/sanitize-html";
 import { getStaticSupabaseClient } from "@/utils/supabase/static";
 
 /**
@@ -338,6 +339,11 @@ export const getCuratedCollectionBySlug = cache(async (slug: string) => {
 
   return {
     ...data,
+    // Rendered as raw HTML on the collection page: sanitize before it leaves
+    // the data layer.
+    extended_content: data.extended_content
+      ? sanitizeContentHtml(data.extended_content)
+      : data.extended_content,
     articles_count: data.blogs?.[0]?.count || 0,
   } as BlogCurated;
 });
@@ -470,6 +476,9 @@ export const getBlogBySlug = cache(async (slug: string) => {
 
   return {
     ...blog,
+    // Rendered as raw HTML by BlogContent: sanitize before it leaves the data
+    // layer (and before ISR caches it).
+    content: sanitizeContentHtml(blog.content),
     categories: blog.categories?.map((cat: any) => cat.category) || [],
   };
 });
@@ -508,6 +517,7 @@ export async function getPreviewBlogBySlug(slug: string) {
 
   return {
     ...blog,
+    content: sanitizeContentHtml(blog.content),
     categories: blog.categories?.map((cat: any) => cat.category) || [],
   };
 }

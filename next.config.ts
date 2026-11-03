@@ -1,6 +1,43 @@
 import type { NextConfig } from "next";
 import { MERGED_POSTS } from "./src/lib/merged-posts";
 
+/**
+ * Content-Security-Policy — deliberately does NOT restrict script-src.
+ *
+ * Pages are statically rendered and cached (ISR), so there is no per-request
+ * nonce. Next.js streams page data through inline <script> tags and the GTM
+ * snippet is inline too, so an enforced script-src would need 'unsafe-inline'
+ * (which defeats it against injected script), and GTM loads tags from hosts
+ * that change whenever marketing adds one. Article/collection HTML is
+ * sanitized on the server instead (src/lib/sanitize-html.ts) and JSON-LD is
+ * escaped (src/components/seo/JsonLd.tsx).
+ *
+ * What is enforced can't break scripts:
+ *  - frame-ancestors: no other site may frame the blog (clickjacking). PostHog
+ *    is allowed because its heatmap/toolbar view loads the site in a frame.
+ *  - object-src / base-uri: no plugins, no <base> hijacking of relative URLs.
+ *  - form-action: forms only post back to this site (all of ours do).
+ */
+const CONTENT_SECURITY_POLICY = [
+  "frame-ancestors 'self' https://us.posthog.com",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
+const SECURITY_HEADERS = [
+  { key: "Content-Security-Policy", value: CONTENT_SECURITY_POLICY },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+  },
+  // CloudFront does not add HSTS for this distribution, so send it from here.
+  // Browsers ignore it over plain http, so local dev is unaffected.
+  { key: "Strict-Transport-Security", value: "max-age=31536000" },
+];
+
 const config: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-dialog"],
@@ -42,6 +79,10 @@ const config: NextConfig = {
   skipTrailingSlashRedirect: true,
   async headers() {
     return [
+      {
+        source: "/:path*",
+        headers: SECURITY_HEADERS,
+      },
       {
         // Responses here carry a user's session cookies. They are dynamic
         // already, but make it explicit so no CDN or proxy ever stores one.
