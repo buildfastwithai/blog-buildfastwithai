@@ -54,7 +54,7 @@ export default function UnrotCta() {
 
           <div className="min-w-0">
             <h3 className="m-0 text-[22px] font-extrabold leading-tight tracking-tight text-white sm:text-[26px]">
-              Unrot
+              Build Fast With AI
             </h3>
             <p className="mb-0 mt-1 text-[14px] leading-snug text-white/80 sm:text-[15px]">
               Learn AI in just 5 minutes a day.
