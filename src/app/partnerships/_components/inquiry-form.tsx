@@ -104,6 +104,17 @@ export function InquiryForm() {
         <input id="f-url" name="company_url" tabIndex={-1} autoComplete="off" />
       </div>
 
+      <label className="consent">
+        <input type="checkbox" name="terms" required />
+        <span>
+          I have read the{" "}
+          <a className="link" href="/partnerships/terms" target="_blank" rel="noopener">
+            terms and conditions
+          </a>{" "}
+          for the services I selected.
+        </span>
+      </label>
+
       <div className="form-foot">
         <button className="btn btn-solid" type="submit" disabled={pending}>
           {pending ? "Sending..." : "Send request"} <span className="arr">&rarr;</span>

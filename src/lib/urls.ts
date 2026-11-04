@@ -11,6 +11,14 @@ export const BLOG_SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
   "https://blog.buildfastwithai.com";
 
+/** The Unrot learning app. */
+export const UNROT_APP_URL = "https://app.buildfastwithai.com/";
+
+/** Unrot app link tagged with where in the blog the click came from. */
+export function unrotAppUrl(source: string, medium: string): string {
+  return `${UNROT_APP_URL}?utm_source=${source}&utm_medium=${medium}&utm_campaign=unrot_app`;
+}
+
 /** Absolute URL for a path on the main marketing site. */
 export function mainSiteUrl(path: string): string {
   return `${MAIN_SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;

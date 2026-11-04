@@ -148,9 +148,9 @@ export default function GuidelinesPage() {
               <div className="blk rv" id="g-links">
                 <h3><span className="bn">05</span>Link policy</h3>
                 <ul>
-                  <li><b>Maximum 2 dofollow links</b> per article, in the body where they help the reader.</li>
-                  <li><b>Paid placements</b> carry <code>rel=&quot;sponsored&quot;</code>, in line with Google&apos;s paid-link guidelines.</li>
-                  <li><b>Anchor text</b> must read naturally. No exact-match stuffing, no link in the first sentence.</li>
+                  <li><b>Maximum 2 contextual links</b> per article, in the body where they help the reader.</li>
+                  <li><b>Paid placements</b> carry <code>rel=&quot;sponsored&quot;</code>, in line with Google&apos;s paid-link guidelines. We do not sell dofollow links.</li>
+                  <li><b>Anchor text</b> must read naturally. No keyword stuffing and no link in the first sentence. An exact-match commercial anchor is an extra-cost option that needs our approval (see the <Link className="zz-terms" href="/partnerships/terms#t-s2">terms</Link>).</li>
                   <li><b>Target pages</b> must be live, HTTPS, safe and relevant. No affiliate or redirect links.</li>
                   <li><b>Internal links:</b> we add 2 to 3 links to related Build Fast with AI articles.</li>
                 </ul>
@@ -159,7 +159,8 @@ export default function GuidelinesPage() {
               <div className="blk rv" id="g-byline">
                 <h3><span className="bn">06</span>Bylines</h3>
                 <ul>
-                  <li><b>Sponsored articles and tool reviews</b> are written by our team and published under the Build Fast with AI editorial byline, marked as sponsored.</li>
+                  <li><b>Sponsored articles and tool reviews</b> are published under the Build Fast with AI editorial byline and marked as sponsored, whether our team wrote them or you sent your own draft.</li>
+                  <li><b>Guest posts</b> from independent contributors may keep the author&apos;s byline credit.</li>
                 </ul>
               </div>
 
@@ -176,9 +177,10 @@ export default function GuidelinesPage() {
               <div className="blk rv" id="g-submit">
                 <h3><span className="bn">08</span>How to submit</h3>
                 <ul>
-                  <li>Pitch first: send 2 to 3 topic ideas through the form. No full drafts before approval.</li>
-                  <li>After approval, share the article as an editable <b>Google Doc</b>.</li>
-                  <li>We may edit for clarity, SEO, length and style. Major changes are shared before publishing.</li>
+                  <li><b>If we write it:</b> tell us the product, the target page and the topic or angle. We send a short outline for approval, then the draft, with one review round.</li>
+                  <li><b>If you write it:</b> send 2 to 3 topic ideas through the form first. After approval, share the article as an editable <b>Google Doc</b>.</li>
+                  <li>We may edit for clarity, SEO, length and style, and we may decline a draft that does not meet these guidelines. Major changes are shared before publishing.</li>
+                  <li>Prices, timing and conditions for each option are in the <Link className="zz-terms" href="/partnerships/terms#t-s1">terms</Link>.</li>
                 </ul>
               </div>
             </div>

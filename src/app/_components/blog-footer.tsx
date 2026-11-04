@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { mainSiteUrl } from "@/lib/urls";
 
 // Plain server-rendered links on every blog page: the blog had no footer, so
@@ -33,6 +35,7 @@ const COMPANY = [
   { name: "AI Workshops", href: mainSiteUrl("/ai-workshops") },
   { name: "Corporate Training", href: mainSiteUrl("/corporate-training") },
   { name: "FDE Program", href: mainSiteUrl("/fde") },
+  { name: "Partner with Us", href: "/partnerships" },
   { name: "Contact", href: mainSiteUrl("/contact") },
 ];
 
@@ -80,6 +83,28 @@ export function BlogFooter() {
 
   return (
     <footer className="border-t border-border bg-muted/30">
+      <div className="mx-auto max-w-6xl px-6 pt-12">
+        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-background p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-foreground">
+              Partner with Build Fast with AI
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Guest posts, sponsored articles, tool reviews and in-blog CTAs.
+              See what we offer and get in touch.
+            </p>
+          </div>
+          <Link
+            href="/partnerships"
+            className={cn(
+              buttonVariants({ variant: "default", size: "sm" }),
+              "shrink-0 font-semibold",
+            )}
+          >
+            Partner with us
+          </Link>
+        </div>
+      </div>
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 sm:grid-cols-2 lg:grid-cols-3">
         <Column title="Topics" links={TOPICS} />
         <Column title="Popular guides" links={POPULAR} />

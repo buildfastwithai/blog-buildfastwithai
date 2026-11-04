@@ -64,15 +64,9 @@ const ITEMS: Item[] = [
     fit: ["Tool review", "Contextual mention"],
     place: (
       <div className="p-review">
-        <span className="p-score">8.6</span>
         <div>
-          <b>Nimbus AI, tested hands-on</b>
-          <small>Verdict: strong pick for agent workflows</small>
-        </div>
-        <div className="p-bars">
-          <span>Ease of use<i style={{ ["--v" as string]: "88%" }} /></span>
-          <span>Output quality<i style={{ ["--v" as string]: "82%" }} /></span>
-          <span>Value<i style={{ ["--v" as string]: "74%" }} /></span>
+          <b>Your product, tested hands-on</b>
+          <small>Pros, cons, pricing and an independent verdict</small>
         </div>
       </div>
     ),
@@ -86,9 +80,9 @@ const ITEMS: Item[] = [
     fit: ["Roundup slot", "Contextual mention"],
     place: (
       <ol className="p-rank">
-        <li><em>1</em>Tool A<small>9.4</small></li>
-        <li className="me"><em>2</em>Nimbus AI<small>9.1</small></li>
-        <li><em>3</em>Tool C<small>8.9</small></li>
+        <li><em>1</em>Other tool</li>
+        <li className="me"><em>2</em>Your product<small>Your slot</small></li>
+        <li><em>3</em>Other tool</li>
       </ol>
     ),
   },
@@ -102,10 +96,10 @@ const ITEMS: Item[] = [
     place: (
       <div className="p-banner">
         <div>
-          <b>Run all 100 prompts in Nimbus AI</b>
-          <small>One click, no setup, free trial</small>
+          <b>Your headline goes here</b>
+          <small>One line of copy about your offer</small>
         </div>
-        <span className="p-btn">Try it &rarr;</span>
+        <span className="p-btn">Your button &rarr;</span>
       </div>
     ),
   },
@@ -118,9 +112,9 @@ const ITEMS: Item[] = [
     fit: ["Sponsored article", "Guest post"],
     place: (
       <div className="p-by">
-        <span className="p-av">NA</span>
+        <span className="p-av">YB</span>
         <div>
-          <b>In partnership with Nimbus</b>
+          <b>In partnership with your brand</b>
           <small>Written by Build Fast with AI Editorial</small>
         </div>
         <span className="p-flag">Sponsored</span>
@@ -145,7 +139,7 @@ const ITEMS: Item[] = [
           </div>
           <span>&#120143;</span>
         </div>
-        <p>Agents wrote 30% more code. Output didn&apos;t move. Here&apos;s what Nimbus AI does differently &#8595;</p>
+        <p>Your announcement or review, written in our voice, with a link to your page. &#8595;</p>
         <div className="xs"><span>&#9825; Likes</span><span>&#8634; Reposts</span><span>Views</span></div>
       </div>
     ),

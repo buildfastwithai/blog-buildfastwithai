@@ -1,6 +1,5 @@
 # Build Fast with AI — Blog
 
-deploy ho ja
 
 The blog for [buildfastwithai.com](https://www.buildfastwithai.com), served on
 its own subdomain: **blog.buildfastwithai.com**.
@@ -264,3 +263,4 @@ resulting cache headers. There is no need to invalidate CloudFront by hand
 after publishing a post.
 
 Redeploy
+
