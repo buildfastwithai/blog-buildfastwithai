@@ -57,6 +57,8 @@ See [`.env.example`](.env.example). Notable:
 - `REVALIDATE_SECRET` — for `/api/revalidate/blog?slug=<slug>`, which purges
   the ISR cache after publishing/editing a post. Send the secret in the
   `x-revalidate-secret` header; a `?secret=` query param is no longer accepted.
+- `PREVIEW_SECRET` — signs `/preview/<slug>` links (32+ random characters).
+  Unset, every preview link 404s. See "Preview links" below.
 - `INDEXNOW_KEY` — optional. When set, `/api/revalidate/blog` also submits the
   changed article URLs to IndexNow (Bing, Yandex, Naver, Seznam) and the key is
   served at `/indexnow-key.txt` for verification. Any 8-128 character
@@ -81,6 +83,21 @@ See [`.env.example`](.env.example). Notable:
 | `/auth/callback`                   | Google OAuth code exchange           |
 | `/auth/confirm`                    | Email confirmation link landing      |
 | `/auth/reset`                      | Set a new password (from reset mail) |
+| `/preview/[slug]?token=…`          | Draft review; signed link, no cache  |
+
+### Preview links
+
+A draft is viewable at `/preview/<slug>` only when the post has
+`is_preview = true` **and** the URL carries a valid, unexpired token for that
+slug. Anything else is a 404. Make a link (1-30 days, default 7) with the
+stage's `PREVIEW_SECRET` in your environment:
+
+```bash
+PREVIEW_SECRET=... pnpm preview-link <slug> 7
+```
+
+Links can't be revoked one by one; rotating `PREVIEW_SECRET` invalidates
+every outstanding link.
 
 ## What changed vs. the main-site version
 

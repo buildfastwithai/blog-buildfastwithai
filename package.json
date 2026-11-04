@@ -16,6 +16,7 @@
     "format": "biome format .",
     "format:fix": "biome format --write .",
     "typecheck": "tsc --noEmit",
+    "preview-link": "node scripts/preview-link.mjs",
     "deploy:production": "sst deploy --stage production",
     "deploy:staging": "sst deploy --stage staging",
     "sst:dev": "sst dev"

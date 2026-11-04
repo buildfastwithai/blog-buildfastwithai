@@ -108,6 +108,8 @@ export default $config({
         RESEND_API_KEY: optional("RESEND_API_KEY"),
         LUMA_API_KEY: optional("LUMA_API_KEY"),
         REVALIDATE_SECRET: optional("REVALIDATE_SECRET"),
+        // Signs /preview links (src/lib/preview-token.ts). Unset = previews 404.
+        PREVIEW_SECRET: optional("PREVIEW_SECRET"),
         INDEXNOW_KEY: optional("INDEXNOW_KEY"),
         BLOG_PREBUILD_COUNT: optional("BLOG_PREBUILD_COUNT"),
       }),
