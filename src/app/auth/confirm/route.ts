@@ -6,6 +6,7 @@ import {
   type LoginType,
   recordLoginEvent,
 } from "@/lib/login-tracking";
+import { safeNextPath } from "@/lib/safe-redirect";
 import { createClient } from "@/utils/supabase/server";
 
 /**
@@ -41,8 +42,9 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as EmailOtpType | null;
   const code = searchParams.get("code");
 
-  let next = searchParams.get("next") ?? "/";
-  if (!next.startsWith("/")) next = "/";
+  // Only a same-site path: `next=//evil.com` (or /\evil.com, /.//evil.com…)
+  // falls back to "/". See safeNextPath.
+  const next = safeNextPath(searchParams.get("next"));
 
   const supabase = await createClient();
 
