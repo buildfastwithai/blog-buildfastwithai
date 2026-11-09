@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type CSSProperties } from "react";
 import { BlogHeader } from "./blog-header";
 import { BlogContent } from "./blog-content";
 import { ShareButtons } from "./share-buttons";
@@ -116,13 +116,20 @@ export function BlogLayout({ blog, relatedBlogs }: BlogLayoutProps) {
       <div className="relative mx-auto max-w-2xl px-4 sm:px-6 lg:px-0 py-10 lg:py-14">
         
         {/* ── Left Sidebar: Floating TOC (XL+) ────────────────────────── */}
-        <div className={cn(
-          "hidden xl:block absolute -left-[340px] top-14 h-full pointer-events-none transition-all duration-700 ease-out",
-          pillVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-        )}>
+        {/* --left-rail is the gutter left of the 42rem reading column, capped at
+            340px. Between 1280px and ~1380px the gutter is narrower than 340px,
+            so the rail shrinks with it instead of running off the screen
+            (24px covers the scrollbar plus a small margin). */}
+        <div
+          style={{ "--left-rail": "min(340px, calc((100vw - 42rem) / 2 - 24px))" } as CSSProperties}
+          className={cn(
+            "hidden xl:block absolute left-[calc(var(--left-rail)*-1)] top-14 h-full pointer-events-none transition-all duration-700 ease-out",
+            pillVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          )}
+        >
           <div className={cn(
             // Column that spans the viewport so the promo below sits at the bottom.
-            "sticky top-24 flex h-[calc(100vh-8rem)] w-[300px] flex-col",
+            "sticky top-24 flex h-[calc(100vh-8rem)] w-[calc(var(--left-rail)-40px)] flex-col",
             pillVisible ? "pointer-events-auto" : "pointer-events-none"
           )}>
             {tocItems.length > 0 && (
@@ -165,7 +172,8 @@ export function BlogLayout({ blog, relatedBlogs }: BlogLayoutProps) {
             <div
               aria-hidden={tocOpen}
               className={cn(
-                "mt-auto w-[280px] shrink-0 transition-all duration-500 ease-out",
+                // @container lets the CTA card tighten its padding/type when narrow.
+                "@container mt-auto w-[calc(100%-20px)] shrink-0 transition-all duration-500 ease-out",
                 tocOpen
                   ? "pointer-events-none translate-y-3 opacity-0"
                   : "translate-y-0 opacity-100"

@@ -1,5 +1,7 @@
 import type { ComponentType } from "react";
-import { FdeWorkshopLeftCta } from "./fde-workshop-left-cta";
+import { FdeClaudeLeftCta } from "./fde-claude-left-cta";
+import { MasterClaudeCodeLeftCta } from "./master-claude-code-left-cta";
+// import { FdeWorkshopLeftCta } from "./fde-workshop-left-cta"; // FDE Playbook 24 Oct 2026, ended
 // import { HackathonLeftCta } from "./hackathon-left-cta"; // AI Build Challenge 2026, closed
 
 export interface LeftCta {
@@ -29,11 +31,18 @@ export interface LeftCta {
  */
 export const LEFT_CTAS: LeftCta[] = [
   {
-    id: "fde-playbook-oct-2026",
-    component: FdeWorkshopLeftCta,
-    // Workshop is Sat 24 Oct 2026, 7:30-9:00 PM IST. Hide at 10 PM IST.
-    startsAt: "2026-10-22 00:00",
-    endsAt: "2026-10-24 22:00",
+    id: "fde-claude-nov-2026",
+    component: FdeClaudeLeftCta,
+    // Workshop is Sat 14 Nov 2026, 7:30-9:00 PM IST (luma.com/zi091yal). Hide at 10 PM IST.
+    startsAt: "2026-11-09 00:00",
+    endsAt: "2026-11-14 22:00",
+  },
+  {
+    id: "master-claude-code-nov-2026",
+    component: MasterClaudeCodeLeftCta,
+    // Paid workshop (₹99) is Sun 22 Nov 2026, 10:00-11:30 AM IST. Hide when it ends.
+    startsAt: "2026-11-15 00:00",
+    endsAt: "2026-11-22 11:30",
   },
 
   // Example: a CTA that only runs on 28 Oct.
