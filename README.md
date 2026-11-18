@@ -1,5 +1,28 @@
 # Build Fast with AI — Blog
 
+> **Redirect-only (Nov 2026).** The blog moved back to the main site at
+> **www.buildfastwithai.com/blogs** (code: `buildfastwithai` repo,
+> `src/app/(static)/blogs`). This host now 308s every URL, in one hop, to the
+> matching page there; only `/robots.txt` (allow-all, so Google can follow the
+> redirects) and `/_next/*` assets are served. The rules and the URL mapping
+> live in [`src/lib/redirect-to-main-site.ts`](src/lib/redirect-to-main-site.ts),
+> wired up in `next.config.ts`.
+>
+> | This host | Redirects to (www.buildfastwithai.com) |
+> | --- | --- |
+> | `/` | `/blogs` |
+> | `/<post>` | `/blogs/<post>` (merged posts → their keeper) |
+> | `/<collection>[/page/N]`, `/collection/<slug>` | `/blogs/collection/<slug>[/page/N]` |
+> | `/all[/page/N]`, `/partnerships/*`, `/preview/*` | same path under `/blogs` |
+> | `/author/satvik-paramkusam`, `/author/satvik` | `/blogs/author/satvik-paramkusham` |
+> | `/feed.xml` | `/feed.xml` |
+> | `/sitemap.xml`, `/llms.txt`, `/llms-full.txt` | `/blogs/sitemap.xml`, `/blogs/llms.txt`, `/blogs/llms-full.txt` |
+> | images, favicons, `/_next/image`, `/auth/*`, `/api/*` | same path on www |
+>
+> Deploy this **only after** the main site serves `/blogs`, and keep it running
+> for at least 12 months. The rest of this README describes the app as it was
+> while the blog was served here; the page code below is no longer reached.
+
 
 The blog for [buildfastwithai.com](https://www.buildfastwithai.com), served on
 its own subdomain: **blog.buildfastwithai.com**.

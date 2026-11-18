@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { MERGED_POSTS } from "./src/lib/merged-posts";
+import { redirectsToMainSite } from "./src/lib/redirect-to-main-site";
 
 const config: NextConfig = {
   // Next 16.3.0's Turbopack panics ("not a char boundary ... '─'") while it
@@ -24,94 +24,14 @@ const config: NextConfig = {
       { protocol: "https", hostname: "images.lumacdn.com" },
     ],
   },
-  // PostHog reverse proxy: route analytics/replay traffic through our own
-  // domain so ad blockers don't block the recorder/assets. Keep the static
-  // and array rules before the catch-all. See src/providers/posthog.tsx.
-  async rewrites() {
-    return [
-      {
-        source: "/ingest/static/:path*",
-        destination: "https://us-assets.i.posthog.com/static/:path*",
-      },
-      {
-        source: "/ingest/array/:path*",
-        destination: "https://us-assets.i.posthog.com/array/:path*",
-      },
-      {
-        source: "/ingest/:path*",
-        destination: "https://us.i.posthog.com/:path*",
-      },
-    ];
-  },
-  // Required so PostHog's trailing-slash API requests aren't redirected.
+  // Required so trailing-slash URLs reach the redirects below unchanged.
   skipTrailingSlashRedirect: true,
-  async headers() {
-    return [
-      {
-        // Responses here carry a user's session cookies. They are dynamic
-        // already, but make it explicit so no CDN or proxy ever stores one.
-        source: "/auth/:path*",
-        headers: [
-          { key: "Cache-Control", value: "private, no-cache, no-store, max-age=0, must-revalidate" },
-          { key: "CDN-Cache-Control", value: "no-store" },
-        ],
-      },
-      {
-        // Review-only article copies (/preview/<slug>). Never cache them at the
-        // CDN and tell every crawler to stay away, in addition to the page's own
-        // noindex meta tag.
-        source: "/preview/:path*",
-        headers: [
-          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
-          { key: "Cache-Control", value: "private, no-cache, no-store, max-age=0, must-revalidate" },
-          { key: "CDN-Cache-Control", value: "no-store" },
-        ],
-      },
-    ];
-  },
+  // This host is redirect-only: every URL 308s to its page on
+  // www.buildfastwithai.com (see src/lib/redirect-to-main-site.ts). Redirects
+  // run before any page, route handler or public file, so the app code below
+  // them is never reached except for /robots.txt.
   async redirects() {
-    return [
-      // Overlapping posts folded into one keeper each (src/lib/merged-posts.ts).
-      ...Object.entries(MERGED_POSTS).map(([from, to]) => ({
-        source: `/${from}`,
-        destination: `/${to}`,
-        permanent: true,
-      })),
-      // skipTrailingSlashRedirect (needed for PostHog) also stops Next from
-      // redirecting /post/ to /post, so crawlers saw two URLs per page. Redirect
-      // them here, leaving /ingest alone.
-      {
-        source: "/:path((?!ingest).+)/",
-        destination: "/:path",
-        permanent: true,
-      },
-      // Anyone who lands here with the old main-site path shape (e.g. a link
-      // rewritten by hand to the new host but keeping /blogs/) still gets the
-      // article instead of a 404.
-      // Order matters: first match wins, so the more specific rules go first.
-      // Both prefixes at once (an old URL rewritten to the new host by hand).
-      {
-        source: "/blogs/collection/:path*",
-        destination: "/:path*",
-        permanent: true,
-      },
-      {
-        source: "/blogs",
-        destination: "/",
-        permanent: true,
-      },
-      {
-        source: "/blogs/:path*",
-        destination: "/:path*",
-        permanent: true,
-      },
-      // Collections dropped the /collection/ prefix; they live at /<slug> now.
-      {
-        source: "/collection/:path*",
-        destination: "/:path*",
-        permanent: true,
-      },
-    ];
+    return redirectsToMainSite();
   },
 };
 

@@ -28,6 +28,11 @@ export const MERGED_POSTS: Record<string, string> = {
   "7-ai-tools-changed-developer-workflow-augustt-2026":
     "7-ai-tools-changed-developer-workflow-august-2026",
 
+  // Top-traffic post (~90K clicks / 3 months) removed from the database on
+  // 2026-11-18; its rankings and links go to the closest live post. Delete this
+  // line if the original is republished under the same slug.
+  "chatgpt-photo-editing-prompts": "100-best-ai-photo-editing-prompts-2026",
+
   // Monthly "best AI models" posts, all targeting the same query.
   "best-ai-models-april-2026": BEST_AI_MODELS,
   "best-ai-models-april-2026-comparison": BEST_AI_MODELS,
